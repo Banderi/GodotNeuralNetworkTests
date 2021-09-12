@@ -26,8 +26,8 @@ res/julius.icns
 # Build output and data directories
 /build*/
 out/
-cmake-build-debug
-cmake-build-release
+CLion/cmake-build-debug
+CLion/cmake-build-release
 /data
 /ext/SDL2/**
 *~
