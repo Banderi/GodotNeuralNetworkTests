@@ -9,3 +9,43 @@ export_presets.cfg
 
 # Mono-specific ignores
 .mono/
+
+# IDE data
+.kdev4
+*.kdev4
+.vs
+.vscode
+/CMakeSettings.json
+
+# Generated resources
+src/platform/version.c
+res/version.rc
+res/version.txt
+res/julius.icns
+
+# Build output and data directories
+/build*/
+out/
+cmake-build-debug
+cmake-build-release
+/data
+/ext/SDL2/**
+*~
+*.swp
+.vscode
+/android
+# Android
+*.iml
+.gradle
+local.properties
+.DS_Store
+/captures
+.externalNativeBuild
+.idea
+.cxx/
+distribution/
+*.log
+
+*.ods#
+
+*.lnk
