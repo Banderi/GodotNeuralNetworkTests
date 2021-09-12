@@ -2,17 +2,8 @@ tool
 extends Node2D
 
 var data = [
-	# first layer (inputs)
-	[
-	],
-	# 2nd layer
-	[
-	],
-	# 3rd layer
-	[
-	],
 ]
-var sizes = [
+var config = [
 	{
 		"size": 64*64,
 		"max_row": 64,
@@ -50,7 +41,7 @@ onready var label = $label
 
 func get_pos(layer, index, max_index):
 
-	var info = sizes[layer]
+	var info = config[layer]
 
 	var row = index % info["max_row"]
 	var column = index / info["max_row"]
@@ -63,22 +54,20 @@ func get_pos(layer, index, max_index):
 func check_init_data_array_sizes():
 
 	# first, add layers as needed if any is missing
-	while data.size() < sizes.size():
+	while data.size() < config.size():
 		data.push_back([])
 
-	for l_index in sizes.size():
-		var l_info = sizes[l_index]
-		var l = data[l_index]
+	for layer_i in config.size():
+		var layer_info = config[layer_i]
+		var layer = data[layer_i]
 
 		# secondly, add neurons as needed if any is missing
-		while l.size() < l_info["size"]:
-			l.push_back([0.0, 0.0, []])
-
+		while layer.size() < layer_info["size"]:
+			layer.push_back([0.0, 0.0, []])
 
 func randomize_neuron_inputs():
 	for n in data[0]:
 		n[0] = rand_range(0.0, 1.0)
-
 func randomize_neuron_weights(layer, randomize_bias, bias_min = 0, bias_max = 0):
 
 	# get next (destination) layer data array
@@ -136,7 +125,13 @@ var profiling = [
 	0,
 	0,
 	0,
-	0
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
 ]
 
 var last_delta = 0
@@ -150,22 +145,22 @@ func _process(delta):
 	# randomize weights
 	if time > 1.0:
 		time -= 1.0
-		var t = OS.get_system_time_msecs()
-		randomize_neuron_weights(0, false)
-		randomize_neuron_weights(1, true, -4000, -500)
-		randomize_neuron_weights(2, true, -2000, -500)
-		randomize_neuron_weights(3, true, -2000, -500)
-		profiling[0] = OS.get_system_time_msecs() - t
+#		var t = OS.get_system_time_msecs()
+#		randomize_neuron_weights(0, false)
+#		randomize_neuron_weights(1, true, -4000, -500)
+#		randomize_neuron_weights(2, true, -2000, -500)
+#		randomize_neuron_weights(3, true, -2000, -500)
+#		profiling[0] = OS.get_system_time_msecs() - t
 
 	# randomize inputs
-	var t = OS.get_system_time_msecs()
-	randomize_neuron_inputs()
-	profiling[1] = OS.get_system_time_msecs() - t
+#	var t = OS.get_system_time_msecs()
+#	randomize_neuron_inputs()
+#	profiling[1] = OS.get_system_time_msecs() - t
 
 	# update
-	t = OS.get_system_time_msecs()
+#	t = OS.get_system_time_msecs()
 #	update_neurons()
-	profiling[2] = OS.get_system_time_msecs() - t
+#	profiling[2] = OS.get_system_time_msecs() - t
 
 	# draw
 	update()
@@ -180,6 +175,12 @@ func _draw():
 	label.text += "\n" + str(profiling[1])
 	label.text += "\n" + str(profiling[2])
 	label.text += "\n" + str(profiling[3])
+	label.text += "\n"
+	label.text += "\n" + str(profiling[4])
+	label.text += "\n" + str(profiling[5])
+	label.text += "\n" + str(profiling[6])
+	label.text += "\n" + str(profiling[7])
+	label.text += "\n" + str(profiling[8])
 
 	for l_index in range(data.size()):
 		# get layer data array
