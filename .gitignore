@@ -26,8 +26,8 @@ res/julius.icns
 # Build output and data directories
 /build*/
 out/
-CLion/cmake-build-debug
-CLion/cmake-build-release
+CLion/cmake-build-debug*/*
+CLion/cmake-build-release*/*
 /data
 /ext/SDL2/**
 *~
@@ -40,9 +40,9 @@ CLion/cmake-build-release
 local.properties
 .DS_Store
 /captures
-.externalNativeBuild
-.idea
-.cxx/
+CLion/.externalNativeBuild
+CLion/.idea
+CLion/.cxx/
 distribution/
 *.log
 

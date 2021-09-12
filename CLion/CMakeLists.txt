@@ -3,4 +3,6 @@ project(CLion)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(CLion main.cpp)
+include_directories(${PROJECT_SOURCE_DIR})
+
+add_library(CLion SHARED ${PROJECT_SOURCE_DIR}/src/simple.c ${PROJECT_SOURCE_DIR}/gdnative_api_struct.gen.h)

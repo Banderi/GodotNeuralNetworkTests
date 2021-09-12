@@ -1,4 +1,4 @@
-tool
+#tool
 extends Node2D
 
 var data = [
@@ -48,6 +48,11 @@ func get_pos(layer, index, max_index):
 	var x = o_x + info["x"] + (column * info["column_spacing"])
 	var y = o_y + (row * info["row_spacing"]) - (min(max_index, info["max_row"]) * info["row_spacing"] * 0.5)
 	return Vector2(x, y)
+
+
+
+### TEST!!!
+onready var TESTLIB = preload("res://bin/test.gdns").new()
 
 #####
 
@@ -181,6 +186,9 @@ func _draw():
 	label.text += "\n" + str(profiling[6])
 	label.text += "\n" + str(profiling[7])
 	label.text += "\n" + str(profiling[8])
+
+	if !Engine.editor_hint:
+		label.text += "\n" + str(TESTLIB.get_data())
 
 	for l_index in range(data.size()):
 		# get layer data array

@@ -1,0 +1,14 @@
+[entry]
+
+Windows.64="res://CLion/cmake-build-debug/libCLion.dll"
+
+[dependencies]
+
+Windows.64=[  ]
+
+[general]
+
+singleton=false
+load_once=true
+symbol_prefix="godot_"
+reloadable=true
