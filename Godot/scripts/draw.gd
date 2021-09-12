@@ -34,7 +34,7 @@ var config = [
 	}
 ]
 
-var o_x = 200
+var o_x = 300
 var o_y = 300
 
 onready var label = $label
@@ -150,22 +150,22 @@ func _process(delta):
 	# randomize weights
 	if time > 1.0:
 		time -= 1.0
-#		var t = OS.get_system_time_msecs()
-#		randomize_neuron_weights(0, false)
-#		randomize_neuron_weights(1, true, -4000, -500)
-#		randomize_neuron_weights(2, true, -2000, -500)
-#		randomize_neuron_weights(3, true, -2000, -500)
-#		profiling[0] = OS.get_system_time_msecs() - t
+		var t = OS.get_system_time_msecs()
+		randomize_neuron_weights(0, false)
+		randomize_neuron_weights(1, true, -4000, -500)
+		randomize_neuron_weights(2, true, -2000, -500)
+		randomize_neuron_weights(3, true, -2000, -500)
+		profiling[0] = OS.get_system_time_msecs() - t
 
 	# randomize inputs
-#	var t = OS.get_system_time_msecs()
-#	randomize_neuron_inputs()
-#	profiling[1] = OS.get_system_time_msecs() - t
+	var t = OS.get_system_time_msecs()
+	randomize_neuron_inputs()
+	profiling[1] = OS.get_system_time_msecs() - t
 
 	# update
-#	t = OS.get_system_time_msecs()
-#	update_neurons()
-#	profiling[2] = OS.get_system_time_msecs() - t
+	t = OS.get_system_time_msecs()
+	update_neurons()
+	profiling[2] = OS.get_system_time_msecs() - t
 
 	# draw
 	update()
@@ -175,11 +175,11 @@ func _draw():
 
 	if label == null:
 		label = $Label
-	label.text = str(last_delta)
-	label.text += "\n" + str(profiling[0])
-	label.text += "\n" + str(profiling[1])
-	label.text += "\n" + str(profiling[2])
-	label.text += "\n" + str(profiling[3])
+	label.text = "Delta: " + str(last_delta)
+	label.text += "\nRand. weights:     " + str(profiling[0])
+	label.text += "\nRand. activations: " + str(profiling[1])
+	label.text += "\nNeuron updates:    " + str(profiling[2])
+	label.text += "\nDraw calls:        " + str(profiling[3])
 	label.text += "\n"
 	label.text += "\n" + str(profiling[4])
 	label.text += "\n" + str(profiling[5])

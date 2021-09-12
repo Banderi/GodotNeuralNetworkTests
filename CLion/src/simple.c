@@ -1,9 +1,9 @@
 #include <gdnative_api_struct.gen.h>
 #include <string.h>
 
-typedef struct blahblahdata {
+typedef struct my_struct {
 	char data[256];
-} blahblahdata;
+} my_struct;
 
 // GDNative supports a large collection of functions for calling back
 // into the main Godot executable. In order for your module to have
@@ -85,7 +85,7 @@ void GDN_EXPORT godot_nativescript_init(void *p_handle) {
 // our new structure. This pointer will act as our instance
 // identifier in case multiple objects are instantiated.
 GDCALLINGCONV void *simple_constructor(godot_object *p_instance, void *p_method_data) {
-	blahblahdata *user_data = api->godot_alloc(sizeof(blahblahdata));
+	my_struct *user_data = api->godot_alloc(sizeof(my_struct));
 	strcpy(user_data->data, "World from GDNative!");
 
 	return user_data;
@@ -104,7 +104,7 @@ GDCALLINGCONV void simple_destructor(godot_object *p_instance, void *p_method_da
 godot_variant simple_get_data(godot_object *p_instance, void *p_method_data, void *p_user_data, int p_num_args, godot_variant **p_args) {
 	godot_string data;
 	godot_variant ret;
-	blahblahdata *user_data = (blahblahdata *)p_user_data;
+	my_struct *user_data = (my_struct *)p_user_data;
 
 	api->godot_string_new(&data);
 	api->godot_string_parse_utf8(&data, user_data->data);
