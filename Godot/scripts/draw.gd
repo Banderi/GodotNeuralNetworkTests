@@ -164,7 +164,7 @@ func _process(delta):
 
 	# update
 	t = OS.get_system_time_msecs()
-	update_neurons()
+#	update_neurons()
 	profiling[2] = OS.get_system_time_msecs() - t
 
 	# draw
@@ -187,7 +187,7 @@ func _draw():
 	label.text += "\n" + str(profiling[7])
 	label.text += "\n" + str(profiling[8])
 	###
-	label.text += "\n" + str(TESTLIB.get_data())
+	label.text += "\n" + str(TESTLIB.get_heartbeat("test"))
 
 	for l_index in range(data.size()):
 		# get layer data array
