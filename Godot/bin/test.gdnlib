@@ -7,8 +7,8 @@ reloadable=true
 
 [entry]
 
-Windows.64="res://bin/libCLion.dll"
+Windows.64="res://bin/libNN.dll"
 
 [dependencies]
 
-Windows.64=[ "res://bin/libNN.dll" ]
+Windows.64=""

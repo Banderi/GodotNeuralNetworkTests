@@ -1,7 +1,6 @@
 #include <gdnative_api_struct.gen.h>
 #include <cstring>
 #include "main.h"
-//#include "NN/boilerplate.h"
 #include "NN/neural_network.h"
 
 const char *p_class_name = "NNClass";
@@ -100,6 +99,12 @@ godot_array constr_godot_array(godot_variant **variants, int num) {
     return arr;
 }
 
+godot_array new_array() {
+    godot_array arr;
+    API->godot_array_new(&arr);
+    return arr;
+}
+
 godot_variant get_param(int param, godot_variant **p_args, int p_num_args) {
     godot_variant ret;
     if (p_num_args == 0) // no parameters!
@@ -121,31 +126,36 @@ godot_variant get_heartbeat(godot_object *p_instance, void *p_method_data, void 
     return to_variant(arr);
 }
 
-
 godot_variant load_neuron_values(godot_object *p_instance, void *p_method_data, void *p_globals, int p_num_args, godot_variant **p_args) {
     godot_array data = to_array(get_param(0, p_args, p_num_args));
     godot_variant ret;
     if (API->godot_array_size(&data) == 0) // empty!
         return debug_line_text("no data!!", 0);
 
-    int current_neuron = 0;
-
     // for each layer...
     int layers_count = API->godot_array_size(&data);
+    NN.layers_count = layers_count;
     for (int i = 0; i < layers_count; ++i) {
         godot_array layer = to_array(API->godot_array_get(&data, i));
-
-        // for each neuron in the layer...
         int neurons_this_layer = API->godot_array_size(&layer); // layer size (num. of neurons in it)
 
+        // calculate number of weights (neurons in the next layer)
+        int neurons_next_layer = 0;
+        if (i + 1 < layers_count) {
+            godot_array next_layer = to_array(API->godot_array_get(&data, i + 1));
+            neurons_next_layer = API->godot_array_size(&next_layer); // layer size (num. of neurons in it)
+        }
+
+        // allocate layer memory if necessary
+        NN.allocate_memory(i, neurons_this_layer, neurons_next_layer);
+
+        // for each neuron in the layer...
         for (int j = 0; j < neurons_this_layer; ++j) {
             godot_array neuron = to_array(API->godot_array_get(&layer, j));
 
             const godot_variant activation = API->godot_array_get(&neuron, 0);
             const godot_variant bias = API->godot_array_get(&neuron, 1);
             const godot_array weights = to_array(API->godot_array_get(&neuron, 2));
-
-//            bp_test();
 
             NN.set_activation(i, j, API->godot_variant_as_real(&activation));
             NN.set_bias(i, j, API->godot_variant_as_real(&bias));
@@ -157,32 +167,62 @@ godot_variant load_neuron_values(godot_object *p_instance, void *p_method_data, 
                 const godot_variant weight = API->godot_array_get(&weights, k);
                 NN.set_weight(i, j, k, API->godot_variant_as_real(&weight));
             }
-
-            current_neuron++;
         }
     }
 
-//    neuron_total_count = current_neuron;
-    return debug_line_text("neurons_done:", current_neuron);
+    NN.allocated = true;
+    return debug_line_text("neurons_done:", NN.neuron_total_count);
 }
 godot_variant retrieve_neuron_values(godot_object *p_instance, void *p_method_data, void *p_globals, int p_num_args, godot_variant **p_args) {
-    godot_variant ret;
-//    if (p_num_args == 0)
-        return ret;
+    // primary object
+    auto data = new_array();
 
-//    // get layer num
-//    const godot_variant p = get_param(0, p_args, p_num_args);
-//    int layer = API->godot_variant_as_int(&p);
-//
-//    // prepare array...
-//    godot_array arr;
-//    API->godot_array_new(&arr);
-//
-//    // go through the layer's stored neurons, build array with them
-//    for (int i = starting_neuron_per_layer[layer]; i < starting_neuron_per_layer[layer] + neurons_per_layer[layer]; ++i) {
-//        array_push_back(&arr, to_variant(neurons[i]));
-//    }
-//    return to_variant(arr);
+    // invalid data
+    if (!NN.allocated)
+        return to_variant(data);
+
+    // for each layer...
+    for (int i = 0; i < NN.layers_count; ++i) {
+        auto l = &NN.layers[i];
+        int neurons_this_layer = l->neuron_total_count;
+
+//        int neurons_next_layer = 0;
+//        if (i + 1 < NN.layers_count)
+//            neurons_next_layer = NN.layers[i + 1].neuron_total_count;
+
+        // layer data array
+        auto layer_arr = new_array();
+
+        // for each neuron in the layer...
+        for (int j = 0; j < neurons_this_layer; ++j) {
+            neuron *n = &l->neurons[j];
+
+            // neuron data array
+            auto neuron_arr = new_array();
+
+            // first two fields are activation and bias
+            array_push_back(&neuron_arr, to_variant(n->activation));
+            array_push_back(&neuron_arr, to_variant(n->bias));
+
+            // weights data array
+            auto weights_arr = new_array();
+
+            // for each synapses' weight in the layer...
+            for (int k = 0; k < n->weights_total_count; ++k)
+                array_push_back(&weights_arr, to_variant(n->weights[k]));
+
+            // add weight array to neuron object
+            array_push_back(&neuron_arr, to_variant(weights_arr));
+
+            // add neuron object to layer array
+            array_push_back(&layer_arr, to_variant(neuron_arr));
+        }
+        // add layer array to primary data object
+        array_push_back(&data, to_variant(layer_arr));
+    }
+
+    // if everything went well....
+    return to_variant(data);
 }
 
 void init_nativescript_methods() {
