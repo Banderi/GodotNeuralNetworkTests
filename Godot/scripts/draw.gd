@@ -186,9 +186,8 @@ func _draw():
 	label.text += "\n" + str(profiling[6])
 	label.text += "\n" + str(profiling[7])
 	label.text += "\n" + str(profiling[8])
-
-	if !Engine.editor_hint:
-		label.text += "\n" + str(TESTLIB.get_data())
+	###
+	label.text += "\n" + str(TESTLIB.get_data())
 
 	for l_index in range(data.size()):
 		# get layer data array
