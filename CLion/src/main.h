@@ -26,6 +26,6 @@ CEXTERN void *init_globals();
 CEXTERN void init_nativescript_methods();
 
 CEXTERN void register_class(GDCALLINGCONV void *(*create_func)(godot_object *, void *), GDCALLINGCONV void (*destroy_func)(godot_object *, void *, void *));
-CEXTERN void register_method(const char *p_name, GDCALLINGCONV godot_variant (*method)(godot_object *, void *, void *, int, godot_variant **));
+CEXTERN void register_method(const char *p_name, GDCALLINGCONV godot_variant (*method)(godot_object *, void *, void *, int, godot_variant **), godot_method_rpc_mode rpc_mode);
 
 #endif //CLION_SIMPLE_H

@@ -29,7 +29,7 @@ void register_class(GDCALLINGCONV void *(*create_func)(godot_object *, void *), 
                                                         (godot_instance_create_func) {create_func, NULL, NULL},
                                                         (godot_instance_destroy_func) {destroy_func, NULL, NULL});
 }
-void register_method(const char *p_name, GDCALLINGCONV godot_variant (*method)(godot_object *, void *, void *, int, godot_variant **)) {
+void register_method(const char *p_name, GDCALLINGCONV godot_variant (*method)(godot_object *, void *, void *, int, godot_variant **), godot_method_rpc_mode rpc_mode) {
     // We then tell Godot about our methods by calling this for each
     // method of our class. In our case, this is just `get_data`.
     // * Our first parameter is yet again our handle pointer.
@@ -40,7 +40,7 @@ void register_method(const char *p_name, GDCALLINGCONV godot_variant (*method)(g
     // * The fifth and final parameter is a description of which function
     //   to call when the method gets called.
     nativescript_API->godot_nativescript_register_method(p_init_handle, p_class_name, p_name,
-                                                         (godot_method_attributes) {GODOT_METHOD_RPC_MODE_DISABLED},
+                                                         (godot_method_attributes) {rpc_mode},
                                                          (godot_instance_method) {method, NULL, NULL});
 }
 

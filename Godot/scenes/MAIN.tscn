@@ -42,9 +42,9 @@ script = ExtResource( 2 )
 
 [node name="Label" type="RichTextLabel" parent="draw"]
 margin_left = 32.0
-margin_top = 71.0
+margin_top = 26.0
 margin_right = 559.0
-margin_bottom = 386.0
+margin_bottom = 558.0
 custom_fonts/normal_font = ExtResource( 3 )
 text = "0.018056
 0

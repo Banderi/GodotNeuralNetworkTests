@@ -2,6 +2,7 @@
 extends Node2D
 
 var data = [
+	# empty!
 ]
 var config = [
 	{
@@ -189,7 +190,39 @@ func _draw():
 	###
 	label.text += "\n" + str(TESTLIB.get_test_string())
 	label.text += "\n" + str(TESTLIB.get_two())
-	label.text += "\n" + str(TESTLIB.get_heartbeat("test"))
+	label.text += "\n" + str(TESTLIB.get_heartbeat("test", 72, "hellooooo!", [5,2]))
+
+	# testing!!!!!!!!!!!!
+	# load up neuron values first...
+	label.text += "\n" + str(TESTLIB.load_neuron_values(data))
+
+	# ...then retrieve them, and check if they match.
+	var results = [
+		TESTLIB.retrieve_neuron_values(0),
+		TESTLIB.retrieve_neuron_values(1),
+		TESTLIB.retrieve_neuron_values(2),
+		TESTLIB.retrieve_neuron_values(3),
+		TESTLIB.retrieve_neuron_values(4),
+		TESTLIB.retrieve_neuron_values(5),
+	]
+	for l in data.size():
+		var correct_so_far = true
+		var wrong_one = -1
+
+		for n in data[l].size():
+			var neuron_original = data[l][n]
+			var neuron_retrieved = results[l][n]
+			if neuron_original[0] != neuron_retrieved: # <---- for now, it's ONLY the activation values
+				correct_so_far = false
+				wrong_one = n
+				break
+
+		if correct_so_far:
+			label.text += "\nLayer " + str(l) + " CORRECT!"
+		else:
+			label.text += "\nLayer " + str(l) + " WRONG!!!"
+			label.text += "\n   " + str(wrong_one) + " should be " + str(data[l][wrong_one][0])
+			label.text += "\n   instead it was " + str(results[l][wrong_one])
 
 	for l_index in range(data.size()):
 		# get layer data array
