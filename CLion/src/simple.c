@@ -1,29 +1,5 @@
 #include <gdnative_api_struct.gen.h>
-#include <string.h>
 #include "main.h"
-
-//typedef struct {
-//	char data[256];
-//} globals_struct;
-
-// GDNative supports a large collection of functions for calling back
-// into the main Godot executable. In order for your module to have
-// access to these functions, GDNative provides your application with
-// a struct containing pointers to all these functions.
-//const godot_gdnative_core_api_struct *API = NULL;
-//const godot_gdnative_ext_nativescript_api_struct *nativescript_API = NULL;
-
-///////////////////////////// CONSTRUCTOR / DESTRUCTOR
-
-//typedef struct {
-//    char data[256];
-//} globals_struct;
-//
-//void *init_globals() {
-//    globals_struct *user_data = (globals_struct*)API->godot_alloc(sizeof(globals_struct));
-//    strcpy(user_data->data, "World from GDNative!");
-//    return (void*)user_data;
-//}
 
 GDCALLINGCONV void *simple_constructor(godot_object *p_instance, void *p_method_data) {
     // In our constructor, allocate memory for our structure and fill
@@ -39,13 +15,7 @@ GDCALLINGCONV void simple_destructor(godot_object *p_instance, void *p_method_da
     API->godot_free(p_user_data);
 }
 
-////////////////////////////////////// METHODS
-
-
-///////////////////////////////// INIT / TERMINATE
-
 static void *p_init_handle;
-//const char *p_class_name = "NNClass";
 
 void register_class(GDCALLINGCONV void *(*create_func)(godot_object *, void *), GDCALLINGCONV void (*destroy_func)(godot_object *, void *, void *)) {
     // We first tell the engine which classes are implemented by calling this.

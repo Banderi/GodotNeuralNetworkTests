@@ -187,6 +187,8 @@ func _draw():
 	label.text += "\n" + str(profiling[7])
 	label.text += "\n" + str(profiling[8])
 	###
+	label.text += "\n" + str(TESTLIB.get_test_string())
+	label.text += "\n" + str(TESTLIB.get_two())
 	label.text += "\n" + str(TESTLIB.get_heartbeat("test"))
 
 	for l_index in range(data.size()):
