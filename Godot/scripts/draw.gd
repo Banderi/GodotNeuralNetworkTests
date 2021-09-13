@@ -53,7 +53,7 @@ func get_pos(layer, index, max_index):
 
 
 ### TEST!!!
-onready var TESTLIB = preload("res://bin/test.gdns").new()
+onready var TESTLIB = load("res://bin/test.gdns").new()
 
 #####
 
@@ -205,24 +205,24 @@ func _draw():
 		TESTLIB.retrieve_neuron_values(4),
 		TESTLIB.retrieve_neuron_values(5),
 	]
-	for l in data.size():
-		var correct_so_far = true
-		var wrong_one = -1
-
-		for n in data[l].size():
-			var neuron_original = data[l][n]
-			var neuron_retrieved = results[l][n]
-			if neuron_original[0] != neuron_retrieved: # <---- for now, it's ONLY the activation values
-				correct_so_far = false
-				wrong_one = n
-				break
-
-		if correct_so_far:
-			label.text += "\nLayer " + str(l) + " CORRECT!"
-		else:
-			label.text += "\nLayer " + str(l) + " WRONG!!!"
-			label.text += "\n   " + str(wrong_one) + " should be " + str(data[l][wrong_one][0])
-			label.text += "\n   instead it was " + str(results[l][wrong_one])
+#	for l in data.size():
+#		var correct_so_far = true
+#		var wrong_one = -1
+#
+#		for n in data[l].size():
+#			var neuron_original = data[l][n]
+#			var neuron_retrieved = results[l][n]
+#			if neuron_original[0] != neuron_retrieved: # <---- for now, it's ONLY the activation values
+#				correct_so_far = false
+#				wrong_one = n
+#				break
+#
+#		if correct_so_far:
+#			label.text += "\nLayer " + str(l) + " CORRECT!"
+#		else:
+#			label.text += "\nLayer " + str(l) + " WRONG!!!"
+#			label.text += "\n   " + str(wrong_one) + " should be " + str(data[l][wrong_one][0])
+#			label.text += "\n   instead it was " + str(results[l][wrong_one])
 
 	for l_index in range(data.size()):
 		# get layer data array

@@ -1,6 +1,8 @@
 #include <gdnative_api_struct.gen.h>
 #include <cstring>
 #include "main.h"
+//#include "NN/boilerplate.h"
+#include "NN/neural_network.h"
 
 const char *p_class_name = "NNClass";
 const godot_gdnative_core_api_struct *API = nullptr;
@@ -119,11 +121,6 @@ godot_variant get_heartbeat(godot_object *p_instance, void *p_method_data, void 
     return to_variant(arr);
 }
 
-double neurons[10000]; // NN test!
-int layers_count = 0;
-int neuron_total_count = 0;
-int neurons_per_layer[20] = {};
-int starting_neuron_per_layer[20] = {};
 
 godot_variant load_neuron_values(godot_object *p_instance, void *p_method_data, void *p_globals, int p_num_args, godot_variant **p_args) {
     godot_array data = to_array(get_param(0, p_args, p_num_args));
@@ -134,46 +131,58 @@ godot_variant load_neuron_values(godot_object *p_instance, void *p_method_data, 
     int current_neuron = 0;
 
     // for each layer...
-    layers_count = API->godot_array_size(&data);
+    int layers_count = API->godot_array_size(&data);
     for (int i = 0; i < layers_count; ++i) {
         godot_array layer = to_array(API->godot_array_get(&data, i));
 
         // for each neuron in the layer...
-        neurons_per_layer[i] = API->godot_array_size(&layer); // layer size (num. of neurons in it)
-        starting_neuron_per_layer[i] = current_neuron;
-        for (int j = 0; j < neurons_per_layer[i]; ++j) {
+        int neurons_this_layer = API->godot_array_size(&layer); // layer size (num. of neurons in it)
+
+        for (int j = 0; j < neurons_this_layer; ++j) {
             godot_array neuron = to_array(API->godot_array_get(&layer, j));
 
             const godot_variant activation = API->godot_array_get(&neuron, 0);
             const godot_variant bias = API->godot_array_get(&neuron, 1);
-            const godot_variant weights = API->godot_array_get(&neuron, 2);
+            const godot_array weights = to_array(API->godot_array_get(&neuron, 2));
 
-            neurons[current_neuron] = API->godot_variant_as_real(&activation);
+//            bp_test();
+
+            NN.set_activation(i, j, API->godot_variant_as_real(&activation));
+            NN.set_bias(i, j, API->godot_variant_as_real(&bias));
+
+            // for each synapses' weight in the layer...
+            int weights_per_neuron_this_layer = API->godot_array_size(&weights);
+
+            for (int k = 0; k < weights_per_neuron_this_layer; ++k) {
+                const godot_variant weight = API->godot_array_get(&weights, k);
+                NN.set_weight(i, j, k, API->godot_variant_as_real(&weight));
+            }
+
             current_neuron++;
         }
     }
 
-    neuron_total_count = current_neuron;
+//    neuron_total_count = current_neuron;
     return debug_line_text("neurons_done:", current_neuron);
 }
 godot_variant retrieve_neuron_values(godot_object *p_instance, void *p_method_data, void *p_globals, int p_num_args, godot_variant **p_args) {
     godot_variant ret;
-    if (p_num_args == 0)
+//    if (p_num_args == 0)
         return ret;
 
-    // get layer num
-    const godot_variant p = get_param(0, p_args, p_num_args);
-    int layer = API->godot_variant_as_int(&p);
-
-    // prepare array...
-    godot_array arr;
-    API->godot_array_new(&arr);
-
-    // go through the layer's stored neurons, build array with them
-    for (int i = starting_neuron_per_layer[layer]; i < starting_neuron_per_layer[layer] + neurons_per_layer[layer]; ++i) {
-        array_push_back(&arr, to_variant(neurons[i]));
-    }
-    return to_variant(arr);
+//    // get layer num
+//    const godot_variant p = get_param(0, p_args, p_num_args);
+//    int layer = API->godot_variant_as_int(&p);
+//
+//    // prepare array...
+//    godot_array arr;
+//    API->godot_array_new(&arr);
+//
+//    // go through the layer's stored neurons, build array with them
+//    for (int i = starting_neuron_per_layer[layer]; i < starting_neuron_per_layer[layer] + neurons_per_layer[layer]; ++i) {
+//        array_push_back(&arr, to_variant(neurons[i]));
+//    }
+//    return to_variant(arr);
 }
 
 void init_nativescript_methods() {

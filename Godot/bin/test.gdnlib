@@ -11,4 +11,4 @@ Windows.64="res://bin/libCLion.dll"
 
 [dependencies]
 
-Windows.64=[  ]
+Windows.64=[ "res://bin/libNN.dll" ]
