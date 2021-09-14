@@ -99,10 +99,23 @@ godot_array constr_godot_array(godot_variant **variants, int num) {
     return arr;
 }
 
-godot_array new_array() {
+godot_array empty_array() {
     godot_array arr;
     API->godot_array_new(&arr);
     return arr;
+}
+godot_variant empty_variant() {
+    godot_variant ret;
+    return ret;
+}
+
+godot_variant safe_return_array(godot_array arr) {
+    auto ret = to_variant(arr);
+    API->godot_array_destroy(&arr);
+    return ret;
+}
+void free(godot_array arr) {
+    API->godot_array_destroy(&arr);
 }
 
 godot_variant get_param(int param, godot_variant **p_args, int p_num_args) {
@@ -126,6 +139,17 @@ godot_variant get_heartbeat(godot_object *p_instance, void *p_method_data, void 
     return to_variant(arr);
 }
 
+godot_variant setup_network(godot_object *p_instance, void *p_method_data, void *p_globals, int p_num_args, godot_variant **p_args) {
+
+    auto arr = constr_godot_array(p_args, p_num_args);
+
+
+
+    // TODO!!!!
+
+
+    return to_variant(true);
+}
 godot_variant load_neuron_values(godot_object *p_instance, void *p_method_data, void *p_globals, int p_num_args, godot_variant **p_args) {
     godot_array data = to_array(get_param(0, p_args, p_num_args));
     godot_variant ret;
@@ -169,13 +193,15 @@ godot_variant load_neuron_values(godot_object *p_instance, void *p_method_data, 
             }
         }
     }
+    // set up synapse caches!
+    NN.update_dendrites();
 
     NN.allocated = true;
     return debug_line_text("neurons_done:", NN.neuron_total_count);
 }
 godot_variant retrieve_neuron_values(godot_object *p_instance, void *p_method_data, void *p_globals, int p_num_args, godot_variant **p_args) {
     // primary object
-    auto data = new_array();
+    auto data = empty_array();
 
     // invalid data
     if (!NN.allocated)
@@ -191,38 +217,46 @@ godot_variant retrieve_neuron_values(godot_object *p_instance, void *p_method_da
 //            neurons_next_layer = NN.layers[i + 1].neuron_total_count;
 
         // layer data array
-        auto layer_arr = new_array();
+        auto layer_arr = empty_array();
 
         // for each neuron in the layer...
         for (int j = 0; j < neurons_this_layer; ++j) {
             neuron *n = &l->neurons[j];
 
             // neuron data array
-            auto neuron_arr = new_array();
+            auto neuron_arr = empty_array();
 
             // first two fields are activation and bias
             array_push_back(&neuron_arr, to_variant(n->activation));
             array_push_back(&neuron_arr, to_variant(n->bias));
 
             // weights data array
-            auto weights_arr = new_array();
+            auto weights_arr = empty_array();
 
             // for each synapses' weight in the layer...
-            for (int k = 0; k < n->weights_total_count; ++k)
-                array_push_back(&weights_arr, to_variant(n->weights[k]));
+            for (int k = 0; k < n->synapses_total_count; ++k)
+                array_push_back(&weights_arr, to_variant(n->synapses[k].weight));
 
             // add weight array to neuron object
             array_push_back(&neuron_arr, to_variant(weights_arr));
+//            free(weights_arr);
 
             // add neuron object to layer array
             array_push_back(&layer_arr, to_variant(neuron_arr));
+//            free(neuron_arr);
         }
         // add layer array to primary data object
         array_push_back(&data, to_variant(layer_arr));
+//        free(layer_arr);
     }
 
     // if everything went well....
-    return to_variant(data);
+    return safe_return_array(data);
+}
+
+godot_variant update(godot_object *p_instance, void *p_method_data, void *p_globals, int p_num_args, godot_variant **p_args) {
+    bool success = NN.update_network();
+    return to_variant(success);
 }
 
 void init_nativescript_methods() {
@@ -234,4 +268,6 @@ void init_nativescript_methods() {
     //
     register_method("load_neuron_values", &load_neuron_values);
     register_method("retrieve_neuron_values", &retrieve_neuron_values);
+    register_method("setup_network", &setup_network);
+    register_method("update", &update);
 }

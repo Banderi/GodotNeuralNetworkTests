@@ -18,7 +18,7 @@ func _process(delta):
 #		NN.randomize_neuron_weights(3, true, -2000, -500)
 #		Profiler.clock_out("rand_weights_local")
 
-	# randomize inputs
+#	# randomize inputs
 #	Profiler.clock_in("rand_activ_local")
 #	NN.randomize_neuron_inputs()
 #	Profiler.clock_out("rand_activ_local")

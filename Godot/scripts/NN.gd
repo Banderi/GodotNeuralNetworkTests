@@ -98,16 +98,29 @@ func update_neurons():
 				n[0] = sum
 
 func update_nn():
-	# upload data to GDNative...
-	NeuralNetwork.load_neuron_values(data)
-
-	# ...download new data from GDNative.
-	var data2 = NeuralNetwork.retrieve_neuron_values()
-
-
+	# update GDNative library and retrieve results!
+	var success = NeuralNetwork.update();
+#	if success:
+#		data = NeuralNetwork.retrieve_neuron_values()
 
 ###########
 
 func _ready():
 	# construct data arrays if they aren't yet initialized (or are partial)
 	check_init_data_array_sizes()
+
+	# randomize inputs
+	Profiler.clock_in("rand_activ_local")
+	randomize_neuron_inputs()
+	Profiler.clock_out("rand_activ_local")
+
+	# randomize weights
+	Profiler.clock_in("rand_weights_local")
+	NN.randomize_neuron_weights(0, false)
+	NN.randomize_neuron_weights(1, true, -4000, -500)
+	NN.randomize_neuron_weights(2, true, -2000, -500)
+	NN.randomize_neuron_weights(3, true, -2000, -500)
+	Profiler.clock_out("rand_weights_local")
+
+	# upload data to GDNative...
+	NeuralNetwork.load_neuron_values(data)
