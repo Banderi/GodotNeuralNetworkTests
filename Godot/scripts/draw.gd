@@ -116,6 +116,13 @@ func update_neurons():
 				sum = max(0.0, sum)
 				n[0] = sum
 
+func update_nn():
+	# upload data to GDNative...
+	NeuralNetwork.load_neuron_values(data)
+
+	# ...download new data from GDNative.
+	var data2 = NeuralNetwork.retrieve_neuron_values()
+
 #####
 
 func _ready():
@@ -123,23 +130,114 @@ func _ready():
 
 var time = 0
 
-var profiling = [
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-]
+var profiling = {
+	"profiling": 0,
+#	"clock_fetching": 0,
+	"frame_delta": null,
+	"frame_total": null,
+		"update_local": null,
+			"rand_activ_local": null,
+			"rand_bias_local": null,
+			"rand_weights_local": null,
+			"update_nn_local": null,
+		"update_gdnative": null,
+			"rand_activ_gdnative": null,
+			"rand_bias_gdnative": null,
+			"rand_weights_gdnative": null,
+			"update_nn_gdnative": null,
+		"draw": null,
+			"draw_text": null,
+			"draw_neurons": null,
+			"draw_synapses": null,
+}
+var profiling_temp = {} # temp
+func clock_in(id):
+	var t = OS.get_ticks_usec()
+	if !profiling_temp.has(id):
+		profiling_temp[id] = [0,0]
+	profiling_temp[id][0] = t # store first timestamp temporarily
 
-var last_delta = 0
+	# SELF PROFILING...
+	profiling["profiling"] += OS.get_ticks_usec() - t
+func clock_out(id, flush = true):
+	var t = OS.get_ticks_usec()
+	if !profiling_temp.has(id):
+		profiling_temp[id] = [0,0]
+	var diff = t - profiling_temp[id][0] # time difference between current and last timestamp
+
+	# retrieve temp storage
+	var tally_stored = profiling_temp[id][1]
+
+	# final tally -- add up to the other values (if present)
+	var final = tally_stored + diff
+
+	# update stored values
+	profiling[id] = final
+	profiling_temp[id][1] += diff
+	if flush:
+		clock_flush(id)
+
+	# SELF PROFILING...
+	profiling["profiling"] += OS.get_ticks_usec() - t
+func clock_flush(id):
+	var t = OS.get_ticks_usec()
+
+	# flush out temp storage
+	if !profiling_temp.has(id):
+		profiling_temp[id] = [0,0]
+	profiling_temp[id][1] = 0
+
+	# SELF PROFILING...
+	profiling["profiling"] += OS.get_ticks_usec() - t
+func time(id, corr = 0.001):
+	if profiling[id] == null:
+		return "--"
+	return str(profiling[id] * corr)
+
+var count = 0
+var count2 = 0
+func clock_profiling_self_update():
+	return
+	var c = 100.0
+
+	# for loop - 1 pass line cycle: 0.031~ microseconds
+	# for loop - 10 pass line cycle: 0.072~ microseconds
+	# for loop - 20 pass line cycle: 0.111~ microseconds
+	# ESTIMATE single pass line: 0.0042~~ microseconds
+
+	# single clock tick fetch: 0.212~ microseconds
+
+	# single GDNative "get_test_string" call: 0.395~ microseconds
+	# single GDNative "get_two" call: 0.195~ microseconds
+	# single GDNative "get_heartbeat" call: 0.356~ microseconds
+
+	# GDNative "load_neuron_values" call: 2.02~ microseconds
+
+
+	##################
+	var t = OS.get_ticks_usec()
+
+	for i in range(c):
+		NeuralNetwork.get_heartbeat()
+#		NeuralNetwork.load_neuron_values(data)
+#		OS.get_ticks_usec()
+
+	var diff = (OS.get_ticks_usec() - t)
+	##################
+
+	var tally = diff / c
+	count2 += tally
+	count += 1
+#	profiling["clock_fetching"] = tally
+	profiling["clock_fetching"] = count2 / count
+
 func _process(delta):
-	last_delta = delta
+	clock_in("frame_total")
+	profiling["frame_delta"] = delta
 	time += delta
+
+	# SPECIAL
+	clock_profiling_self_update()
 
 	# construct data arrays if they aren't yet initialized (or are partial)
 	check_init_data_array_sizes()
@@ -147,74 +245,46 @@ func _process(delta):
 	# randomize weights
 	if time > 1.0:
 		time -= 1.0
-		var t = OS.get_system_time_msecs()
+		clock_in("rand_weights_local")
 		randomize_neuron_weights(0, false)
 		randomize_neuron_weights(1, true, -4000, -500)
 		randomize_neuron_weights(2, true, -2000, -500)
 		randomize_neuron_weights(3, true, -2000, -500)
-		profiling[0] = OS.get_system_time_msecs() - t
+		clock_out("rand_weights_local")
 
 	# randomize inputs
-	var t = OS.get_system_time_msecs()
+	clock_in("rand_activ_local")
 	randomize_neuron_inputs()
-	profiling[1] = OS.get_system_time_msecs() - t
+	clock_out("rand_activ_local")
 
-	# update
-	t = OS.get_system_time_msecs()
+	# update neural network
+#	clock_in("update_nn_local")
 #	update_neurons()
-	profiling[2] = OS.get_system_time_msecs() - t
+#	clock_out("update_nn_local")
+
+	clock_in("update_nn_gdnative")
+	update_nn()
+	clock_out("update_nn_gdnative")
 
 	# draw
 	update()
 
-func _draw():
-	var t = OS.get_system_time_msecs()
+	clock_out("frame_total")
 
+func _draw():
+	clock_in("draw")
+
+	# draw text
+	clock_in("draw_text")
 	if label == null:
 		label = $Label
-	label.text = "Delta: " + str(last_delta)
-	label.text += "\nRand. weights:     " + str(profiling[0])
-	label.text += "\nRand. activations: " + str(profiling[1])
-	label.text += "\nNeuron updates:    " + str(profiling[2])
-	label.text += "\nDraw calls:        " + str(profiling[3])
-	label.text += "\n"
-	label.text += "\n" + str(profiling[4])
-	label.text += "\n" + str(profiling[5])
-	label.text += "\n" + str(profiling[6])
-	label.text += "\n" + str(profiling[7])
-	label.text += "\n" + str(profiling[8])
-	label.text += "\n"
-
-	# testing!!!!!!!!!!!!
-#	label.text += "\n" + str(NeuralNetwork.get_test_string())
-#	label.text += "\n" + str(NeuralNetwork.get_two())
-#	label.text += "\n" + str(NeuralNetwork.get_heartbeat("test", 72, "hellooooo!", [5,2]))
-
-	# load up neuron values first...
-	label.text += "\n" + str(NeuralNetwork.load_neuron_values(data))
-
-	# ...then retrieve them.
-	var data2 = NeuralNetwork.retrieve_neuron_values()
-
-	for l in data.size():
-		var correct_so_far = true
-		var wrong_one = -1
-
-		for n in data[l].size():
-			var neuron_original = data[l][n]
-			var neuron_retrieved = data2[l][n]
-			if stepify(neuron_original[0], 0.001) != stepify(neuron_retrieved[0], 0.001): # <---- for now, it's ONLY the activation values
-				correct_so_far = false
-				wrong_one = n
-				break
-
-		if correct_so_far:
-			label.text += "\nLayer " + str(l) + " CORRECT!"
-		else:
-			label.text += "\nLayer " + str(l) + " WRONG!!!"
-			label.text += "\n   " + str(wrong_one) + " should be " + str(data[l][wrong_one][0])
-			label.text += "\n   instead it was " + str(data2[l][wrong_one][0])
-
+	label.text = ""
+	for id in profiling:
+		var v = time(id)
+		label.text += "\n" + id + ": " + v
+		pass
+	profiling["profiling"] = 0 # SPECIAL...
+	clock_out("draw_text")
 
 	# draw graphics
 	for l_index in range(data.size()):
@@ -236,7 +306,7 @@ func _draw():
 			var pos = get_pos(l_index, n_index, l.size())
 #			if next_l != null:
 #				for w_index in next_l.size():
-#					if n_index > l.size() - sizes[l_index]["max_row"]:
+#					if n_index > l.size() - config[l_index]["max_row"]:
 #						var w = 0.0
 #						if w_index < n[2].size():
 #							w = n[2][w_index]
@@ -244,7 +314,10 @@ func _draw():
 #						draw_line(pos + Vector2(3, 3), pos2 + Vector2(3, 3), Color(0,0,0,1).linear_interpolate(Color(1,0,0,1), w))
 
 			# draw neuron
+			clock_in("draw_neurons")
 			draw_rect(Rect2(pos.x, pos.y, 6, 6), Color(0,0,0,1).linear_interpolate(Color(1,1,1,1), n[0]))
+			clock_out("draw_neurons", false)
+	clock_flush("draw_neurons")
 
 
-	profiling[3] = OS.get_system_time_msecs() - t
+	clock_out("draw")
