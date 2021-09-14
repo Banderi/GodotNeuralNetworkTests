@@ -22,6 +22,31 @@ void register_method(const char *p_name, GDCALLINGCONV godot_variant (*method)(g
     return register_method(p_name, method, GODOT_METHOD_RPC_MODE_DISABLED);
 }
 
+// empty objects
+godot_variant empty_variant() {
+    godot_variant ret;
+    return ret;
+}
+godot_array empty_array() {
+    godot_array arr;
+    API->godot_array_new(&arr);
+    return arr;
+}
+
+void free(godot_variant a) {
+    API->godot_variant_destroy(&a);
+}
+void free(godot_array a) {
+    API->godot_array_destroy(&a);
+}
+void free(godot_string a) {
+    API->godot_string_destroy(&a);
+}
+void free(godot_object *a) {
+    API->godot_object_destroy(&a);
+}
+
+// these are simple variable types. they don't require deallocation
 godot_variant to_variant(int a) {
     godot_variant ret;
     API->godot_variant_new_int(&ret, a);
@@ -37,12 +62,16 @@ godot_variant to_variant(double a) {
     API->godot_variant_new_real(&ret, a);
     return ret;
 }
-godot_variant to_variant(godot_string a) {
+
+// these are complex variant/object types -- they REQUIRE deallocation!!
+godot_variant to_variant_obj(godot_string a, bool dealloc = true) {
     godot_variant ret;
     API->godot_variant_new_string(&ret, &a);
+    if (dealloc)
+        free(a);
     return ret;
 }
-godot_variant to_variant(const char *a) {
+godot_variant to_variant_obj(const char *a) {
     // first, declare, initialize and fill a string object
     godot_string str;
     API->godot_string_new(&str);
@@ -53,35 +82,46 @@ godot_variant to_variant(const char *a) {
     API->godot_variant_new_string(&ret, &str);
 
     // remember to deallocate the object!
-    API->godot_string_destroy(&str);
+//    API->godot_string_destroy(&str);
+//    if (dealloc)
+        free(str);
     return ret;
 }
-godot_variant to_variant(godot_array a) {
+godot_variant to_variant_obj(godot_array a, bool dealloc = true) {
     godot_variant ret;
+//    godot_array b; // = empty_array();
+//    API->godot_array_new_copy(&b, &a);
+//    API->godot_variant_new_array(&ret, &a);
     API->godot_variant_new_array(&ret, &a);
+    if (dealloc)
+        free(a);
     return ret;
 }
-godot_variant to_variant(godot_object *a) {
-    godot_variant ret;
-    API->godot_variant_new_object(&ret, a);
-    return ret;
-}
+//godot_variant to_variant_obj(godot_object *a, bool dealloc = true) {
+//    godot_variant ret;
+//    API->godot_variant_new_object(&ret, a);
+//    if (dealloc)
+//        free(a);
+//    return ret;
+//}
 
 godot_array to_array(godot_variant a) {
     return API->godot_variant_as_array(&a);
 }
-void array_push_back(godot_array *arr, const godot_variant a) {
+void array_push_back(godot_array *arr, const godot_variant a, bool dealloc = true) {
     API->godot_array_push_back(arr, &a);
+    if (dealloc)
+        free(a);
 }
 
 godot_variant debug_line_text(const char *text, int num) {
     godot_array arr;
     API->godot_array_new(&arr);
-    auto t = to_variant(text);
+    auto t = to_variant_obj(text);
     auto n = to_variant(num);
     array_push_back(&arr, t);
     array_push_back(&arr, n);
-    return to_variant(arr);
+    return to_variant_obj(arr);
 }
 
 godot_array constr_godot_array(godot_variant variants[], int num) {
@@ -99,24 +139,11 @@ godot_array constr_godot_array(godot_variant **variants, int num) {
     return arr;
 }
 
-godot_array empty_array() {
-    godot_array arr;
-    API->godot_array_new(&arr);
-    return arr;
-}
-godot_variant empty_variant() {
-    godot_variant ret;
-    return ret;
-}
-
-godot_variant safe_return_array(godot_array arr) {
-    auto ret = to_variant(arr);
-    API->godot_array_destroy(&arr);
-    return ret;
-}
-void free(godot_array arr) {
-    API->godot_array_destroy(&arr);
-}
+//godot_variant safe_return_array(godot_array arr) {
+//    auto ret = to_variant_obj(&arr);
+//    free(arr);
+//    return ret;
+//}
 
 godot_variant get_param(int param, godot_variant **p_args, int p_num_args) {
     godot_variant ret;
@@ -129,14 +156,100 @@ godot_variant get_param(int param, godot_variant **p_args, int p_num_args) {
 //////////// NATIVESCRIPT CLASS MEMBER FUNCTIONS
 
 godot_variant get_test_string(godot_object *p_instance, void *p_method_data, void *p_globals, int p_num_args, godot_variant **p_args) {
-    return to_variant(((globals_struct *)(p_globals))->data);
+
+    godot_string data;
+    godot_variant ret;
+
+    API->godot_string_new(&data);
+    API->godot_string_parse_utf8(&data, "test");
+    API->godot_variant_new_string(&ret, &data);
+    API->godot_string_destroy(&data);
+
+    return ret;
+//    return to_variant(((globals_struct *)(p_globals))->data);
 }
 godot_variant get_two(godot_object *p_instance, void *p_method_data, void *p_globals, int p_num_args, godot_variant **p_args) {
-    return to_variant(2);
+
+    // this DOES NOT create a leak...
+//    godot_string data;
+//    godot_variant ret;
+//
+//    API->godot_string_new(&data);
+//    API->godot_string_parse_utf8(&data, "test");
+//    API->godot_variant_new_string(&ret, &data);
+//    API->godot_string_destroy(&data);
+//    return ret;
+
+
+    // .....................
+
+
+    // this DOES NOT create a leak...
+//    godot_variant ret;
+//    for (int i = 0; i < 20; ++i) {
+//        godot_string data;
+//        API->godot_string_new(&data); // <--- this leaves behind a "phantom" string, but we already destroy it at the end of each loop.
+//        API->godot_string_parse_utf8(&data, "test");
+//
+//        if (i > 0) // only destroy after the first loop - you can not destroy uninitialized objects!
+//            API->godot_variant_destroy(&ret); // DESTROY the variant first if already initialized!!!!
+//        API->godot_variant_new_string(&ret, &data); // <--- this leaves behind a "phantom" variant, so it needs to be destroyed!!
+//
+//        API->godot_string_destroy(&data);
+//    }
+
+
+    // .....................
+
+    auto arr = empty_array();
+
+    for (int i = 0; i < 20; ++i) {
+        auto b = empty_array();
+
+
+
+
+
+        array_push_back(&b, to_variant(i));
+
+
+
+
+
+        auto varr = to_variant_obj(b);
+
+
+//        godot_variant varr;
+//        API->godot_variant_new_array(&varr, &b);
+////        API->godot_array_destroy(&b);
+//        free(b);
+
+
+
+
+        array_push_back(&arr, varr);
+//        API->godot_variant_destroy(&varr);
+
+
+
+
+//        free(b);
+//        API->godot_array_destroy(&b);
+
+
+
+    }
+
+    godot_variant ret;
+    API->godot_variant_new_array(&ret, &arr);
+    API->godot_array_destroy(&arr);
+    return ret;
+
+//    return to_variant_obj(arr);
 }
 godot_variant get_heartbeat(godot_object *p_instance, void *p_method_data, void *p_globals, int p_num_args, godot_variant **p_args) {
     godot_array arr = constr_godot_array(p_args, p_num_args);
-    return to_variant(arr);
+    return to_variant_obj(arr);
 }
 
 godot_variant setup_network(godot_object *p_instance, void *p_method_data, void *p_globals, int p_num_args, godot_variant **p_args) {
@@ -203,52 +316,102 @@ godot_variant retrieve_neuron_values(godot_object *p_instance, void *p_method_da
     // primary object
     auto data = empty_array();
 
+    // temp empty arrays
+    auto layer_arr = empty_array();
+    auto neuron_arr = empty_array();
+    auto weights_arr = empty_array();
+
     // invalid data
     if (!NN.allocated)
-        return to_variant(data);
+        return to_variant_obj(data);
 
     // for each layer...
     for (int i = 0; i < NN.layers_count; ++i) {
         auto l = &NN.layers[i];
-        int neurons_this_layer = l->neuron_total_count;
+        unsigned int neurons_this_layer = l->neuron_total_count;
 
         // layer data array
-        auto layer_arr = empty_array();
+        API->godot_array_clear(&layer_arr);
 
         // for each neuron in the layer...
         for (int j = 0; j < neurons_this_layer; ++j) {
             neuron *n = &l->neurons[j];
 
             // neuron data array
-            auto neuron_arr = empty_array();
+            API->godot_array_clear(&neuron_arr);
 
             // first two fields are activation and bias
             array_push_back(&neuron_arr, to_variant(n->activation));
             array_push_back(&neuron_arr, to_variant(n->bias));
 
             // weights data array
-            auto weights_arr = empty_array();
+            API->godot_array_clear(&weights_arr);
 
             // for each synapses' weight in the layer...
             for (int k = 0; k < n->synapses_total_count; ++k)
                 array_push_back(&weights_arr, to_variant(n->synapses[k].weight));
 
             // add weight array to neuron object
-            array_push_back(&neuron_arr, to_variant(weights_arr));
+            array_push_back(&neuron_arr, to_variant_obj(weights_arr));
 
             // add neuron object to layer array
-            array_push_back(&layer_arr, to_variant(neuron_arr));
+            array_push_back(&layer_arr, to_variant_obj(neuron_arr));
         }
+
         // add layer array to primary data object
-        array_push_back(&data, to_variant(layer_arr));
+        array_push_back(&data, to_variant_obj(layer_arr));
     }
 
+    // free temp arrays
+//    free(layer_arr);
+//    free(neuron_arr);
+//    free(weights_arr);
+
     // if everything went well....
-    return safe_return_array(data);
+    return to_variant_obj(data);
 }
 
 godot_variant update(godot_object *p_instance, void *p_method_data, void *p_globals, int p_num_args, godot_variant **p_args) {
     bool success = NN.update_network();
+
+
+
+//    godot_string data;
+//    godot_variant ret;
+//
+//    API->godot_string_new(&data);
+//    API->godot_string_parse_utf8(&data, "test");
+//    API->godot_variant_new_string(&ret, &data);
+//    API->godot_string_destroy(&data);
+
+
+//    while (true) {
+//        godot_string data;
+//        godot_variant ret;
+//
+//        API->godot_string_new(&data);
+//        API->godot_string_parse_utf8(&data, "test");
+//        API->godot_variant_new_string(&ret, &data);
+//        API->godot_string_destroy(&data);
+//    }
+
+
+
+
+
+
+
+//    godot_variant var;
+//    while (true) {
+//        auto a = empty_array();
+////        to_variant_obj(&a);
+//        API->godot_variant_new_array(&var, &a);
+//
+//
+////        free(a);
+//        API->godot_array_destroy(&a);
+//    }
+
     return to_variant(success);
 }
 

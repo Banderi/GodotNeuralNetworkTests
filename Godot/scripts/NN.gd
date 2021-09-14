@@ -99,9 +99,18 @@ func update_neurons():
 
 func update_nn():
 	# update GDNative library and retrieve results!
+
+	var l
+	while (true):
+		l = NeuralNetwork.get_two();
+
+
+
 	var success = NeuralNetwork.update();
-#	if success:
-#		data = NeuralNetwork.retrieve_neuron_values()
+	if success:
+		pass
+	data = NeuralNetwork.retrieve_neuron_values()
+	pass
 
 ###########
 
