@@ -212,10 +212,6 @@ godot_variant retrieve_neuron_values(godot_object *p_instance, void *p_method_da
         auto l = &NN.layers[i];
         int neurons_this_layer = l->neuron_total_count;
 
-//        int neurons_next_layer = 0;
-//        if (i + 1 < NN.layers_count)
-//            neurons_next_layer = NN.layers[i + 1].neuron_total_count;
-
         // layer data array
         auto layer_arr = empty_array();
 
@@ -239,15 +235,12 @@ godot_variant retrieve_neuron_values(godot_object *p_instance, void *p_method_da
 
             // add weight array to neuron object
             array_push_back(&neuron_arr, to_variant(weights_arr));
-//            free(weights_arr);
 
             // add neuron object to layer array
             array_push_back(&layer_arr, to_variant(neuron_arr));
-//            free(neuron_arr);
         }
         // add layer array to primary data object
         array_push_back(&data, to_variant(layer_arr));
-//        free(layer_arr);
     }
 
     // if everything went well....
