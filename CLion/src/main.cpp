@@ -216,7 +216,7 @@ godot_variant get_two(godot_object *p_instance, void *p_method_data, void *p_glo
 
 
 
-        auto varr = to_variant_obj(b);
+//        auto varr = to_variant_obj(b);
 
 
 //        godot_variant varr;
@@ -227,7 +227,7 @@ godot_variant get_two(godot_object *p_instance, void *p_method_data, void *p_glo
 
 
 
-        array_push_back(&arr, varr);
+        array_push_back(&arr, to_variant_obj(b));
 //        API->godot_variant_destroy(&varr);
 
 
@@ -240,12 +240,12 @@ godot_variant get_two(godot_object *p_instance, void *p_method_data, void *p_glo
 
     }
 
-    godot_variant ret;
-    API->godot_variant_new_array(&ret, &arr);
-    API->godot_array_destroy(&arr);
-    return ret;
+//    godot_variant ret;
+//    API->godot_variant_new_array(&ret, &arr);
+//    API->godot_array_destroy(&arr);
+//    return ret;
 
-//    return to_variant_obj(arr);
+    return to_variant_obj(arr);
 }
 godot_variant get_heartbeat(godot_object *p_instance, void *p_method_data, void *p_globals, int p_num_args, godot_variant **p_args) {
     godot_array arr = constr_godot_array(p_args, p_num_args);
