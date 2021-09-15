@@ -398,7 +398,7 @@ godot_variant retrieve_neuron_values(godot_object *p_instance, void *p_method_da
 
         // for each neuron in the layer...
         for (int j = 0; j < neurons_this_layer; ++j) {
-            neuron *n = &l->neurons[j];
+            neuron_obj *n = &l->neurons[j];
 
             // neuron data array
             auto neuron_arr = empty_array();

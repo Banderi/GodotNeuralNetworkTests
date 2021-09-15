@@ -18,7 +18,9 @@ var profiling = {
 		"draw": null,
 			"draw_text": null,
 			"draw_neurons": null,
-			"draw_synapses": null,
+			"draw_synapses_first": null,
+			"draw_synapses_second": null,
+#			"draw_synapses": null,
 }
 var profiling_temp = {} # temp
 func clock_in(id):

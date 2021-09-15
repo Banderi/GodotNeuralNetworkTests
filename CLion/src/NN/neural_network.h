@@ -3,31 +3,31 @@
 
 // NEURAL NETWORK!
 
-typedef struct synapse synapse;
+typedef struct synapse_obj synapse_obj;
 
-typedef struct neuron {
+typedef struct neuron_obj {
     double potential = 0.0;
     double activation = 0.0;
     double bias = 0.0;
-    synapse *synapses = nullptr; // array
+    synapse_obj *synapses = nullptr; // array
     unsigned long long synapses_total_count = 0;
-} neuron;
+} neuron_obj;
 
-typedef struct synapse {
+typedef struct synapse_obj {
     double weight = 0.0;
-    neuron *termination;
-} synapse;
+    neuron_obj *termination{};
+} synapse_obj;
 
-typedef struct layer {
+typedef struct layer_obj {
     bool allocated = false;
     unsigned int neuron_total_count = 0;
-    neuron *neurons = nullptr; // array
-} layer;
+    neuron_obj *neurons = nullptr; // array
+} layer_obj;
 
 class neural_network {
 public:
     bool allocated = false;
-    layer layers[20]; // <-- an array of arrays of neurons -- each layer can contain many neurons.
+    layer_obj layers[20]; // <-- an array of arrays of neurons -- each layer can contain many neurons.
 
     int layers_count = 0;
     unsigned long long neuron_total_count = 0;
@@ -35,7 +35,7 @@ public:
     void allocate_memory(int layer, int neuron_count, int next_layer_neur_count);
     void update_dendrites();
 
-    neuron *get_neuron(int layer, int index);
+    neuron_obj *get_neuron(int layer, int index);
     void set_activation(int layer, int index, double a);
     void set_bias(int layer, int index, double b);
     void set_weight(int layer, int index, int w_index, double weight);

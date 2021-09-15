@@ -1,9 +1,10 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://shaders/input.shader" type="Shader" id=1]
-[ext_resource path="res://scripts/draw.gd" type="Script" id=2]
+[ext_resource path="res://scripts/draw_neurons.gd" type="Script" id=2]
 [ext_resource path="res://fonts/debug_monospace.tres" type="DynamicFont" id=3]
 [ext_resource path="res://scripts/main.gd" type="Script" id=4]
+[ext_resource path="res://scripts/draw_synapses.gd" type="Script" id=5]
 
 [sub_resource type="OpenSimplexNoise" id=1]
 period = 4.0
@@ -41,6 +42,14 @@ __meta__ = {
 
 [node name="draw" type="Node2D" parent="."]
 script = ExtResource( 2 )
+
+[node name="back" type="Node2D" parent="draw"]
+z_index = -1
+script = ExtResource( 5 )
+
+[node name="back2" type="Node2D" parent="draw"]
+z_index = -1
+script = ExtResource( 5 )
 
 [node name="Label" type="RichTextLabel" parent="draw"]
 margin_left = 32.0

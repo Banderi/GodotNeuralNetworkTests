@@ -17,13 +17,13 @@ void neural_network::allocate_memory(int layer, int neuron_count, int next_layer
         return;
 
     // allocate memory for neurons
-    layers[layer].neurons = (neuron*)calloc(neuron_count, sizeof(neuron));
+    layers[layer].neurons = (neuron_obj*)calloc(neuron_count, sizeof(neuron_obj));
     layers[layer].neuron_total_count = neuron_count;
 
     // allocate memory for weights
     for (int i = 0; i < neuron_count; ++i) {
-        neuron *n = &layers[layer].neurons[i];
-        n->synapses = (synapse*)calloc(next_layer_neur_count, sizeof(synapse)); // oh boy...
+        neuron_obj *n = &layers[layer].neurons[i];
+        n->synapses = (synapse_obj*)calloc(next_layer_neur_count, sizeof(synapse_obj)); // oh boy...
         n->synapses_total_count = next_layer_neur_count;
     }
 
@@ -53,7 +53,7 @@ void neural_network::update_dendrites() {
     }
 }
 
-neuron *neural_network::get_neuron(int layer, int index) {
+neuron_obj *neural_network::get_neuron(int layer, int index) {
     return &layers[layer].neurons[index];
 }
 void neural_network::set_activation(int layer, int index, double a) {
