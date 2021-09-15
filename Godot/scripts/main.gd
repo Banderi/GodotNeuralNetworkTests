@@ -24,10 +24,6 @@ func _process(delta):
 	Profiler.clock_out("rand_activ_local")
 
 	# update neural network
-#	Profiler.clock_in("update_nn_local")
-#	NN.update_neurons()
-#	Profiler.clock_out("update_nn_local")
-
 	Profiler.clock_in("update_gdnative")
 	NN.update_nn()
 	Profiler.clock_out("update_gdnative")

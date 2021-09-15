@@ -70,33 +70,6 @@ func randomize_neuron_weights(layer, randomize_bias, bias_min = 0, bias_max = 0)
 			if randomize_bias:
 				n[1] = rand_range(bias_min, bias_max)
 
-func update_neurons():
-	for l_index in data.size():
-		if l_index > 0: # ignore first layer
-
-			# get layer data arrays
-			var l = data[l_index]
-			var l_prev = data[l_index - 1]
-
-			# go through each neuron (outputs)
-			for n_index in l.size():
-				# get current neuron (output)
-				var n = l[n_index]
-
-				# starts off by setting equal to the bias
-				var sum = n[1]
-				for n_prev in l_prev:
-					# get prev neuron's weight
-					var w = 0.0
-					if n_index < n_prev[2].size():
-						w = n_prev[2][n_index]
-					# prev. neuron activation * conn. weight
-					sum += n_prev[0] * w
-
-				# ReLU
-				sum = max(0.0, sum)
-				n[0] = sum
-
 
 func parenth(a, b):
 	return " (" + str(a) + "," + str(b) + ")"
@@ -135,18 +108,6 @@ func update_nn():
 	NeuralNetwork.load_neuron_values(data)
 	Profiler.clock_out("store_values")
 
-
-#	var test = ["test"]
-#	var r = NeuralNetwork.get_heartbeat(test)
-#	print(r)
-#	test = r
-
-#	var l
-#	while (true):
-#		NeuralNetwork.load_neuron_values(data)
-
-
-
 	# update GDNative library!
 	Profiler.clock_in("update_nn")
 	var success = NeuralNetwork.update();
@@ -159,23 +120,6 @@ func update_nn():
 	Profiler.clock_in("fetchset_one_by_one")
 	fetchset_full_database()
 	Profiler.clock_out("fetchset_one_by_one")
-
-#	var res = NeuralNetwork.retrieve_neuron_values()
-#	print(var2bytes(res).size())
-#	print(var2bytes(res) == var2bytes(data))
-#	print(var2bytes(res[0][0][0]) == var2bytes(data[0][0][0]))
-
-#	var res_converted = bytes2var(res)
-#
-#	var a = res_converted
-#	var b = data
-##	print("%.30f %.30f" % [a, b])
-#	test_identity(a, b)
-##	test_identity(res[0][0][0], data[0][0][0], true)
-#
-#
-#	data = res_converted # memory leak when assigning to our data array and I don't know WHYY
-	pass
 
 ###########
 
