@@ -6,15 +6,15 @@
 typedef struct synapse synapse;
 
 typedef struct neuron {
-    float potential = 0.0;
-    float activation = 0.0;
-    float bias = 0.0;
+    double potential = 0.0;
+    double activation = 0.0;
+    double bias = 0.0;
     synapse *synapses = nullptr; // array
     unsigned long long synapses_total_count = 0;
 } neuron;
 
 typedef struct synapse {
-    float weight = 0.0;
+    double weight = 0.0;
     neuron *termination;
 } synapse;
 
@@ -36,9 +36,9 @@ public:
     void update_dendrites();
 
     neuron *get_neuron(int layer, int index);
-    void set_activation(int layer, int index, float a);
-    void set_bias(int layer, int index, float b);
-    void set_weight(int layer, int index, int w_index, float weight);
+    void set_activation(int layer, int index, double a);
+    void set_bias(int layer, int index, double b);
+    void set_weight(int layer, int index, int w_index, double weight);
 
     bool update_network(); // here the magic happens!!!!!!!
 };

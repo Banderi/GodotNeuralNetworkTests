@@ -46,6 +46,25 @@ void free(godot_object *a) {
     API->godot_object_destroy(&a);
 }
 
+int to_int(godot_variant a, bool dealloc = true) {
+    auto ret = API->godot_variant_as_int(&a);
+    if (dealloc)
+        free(a);
+    return ret;
+}
+int to_bool(godot_variant a, bool dealloc = true) {
+    auto ret = API->godot_variant_as_bool(&a);
+    if (dealloc)
+        free(a);
+    return ret;
+}
+int to_double(godot_variant a, bool dealloc = true) {
+    auto ret = API->godot_variant_as_real(&a);
+    if (dealloc)
+        free(a);
+    return ret;
+}
+
 // these are simple variable types. they don't require deallocation
 godot_variant to_variant(int a) {
     godot_variant ret;
@@ -111,12 +130,9 @@ void array_push_back(godot_array *arr, const godot_variant a, bool dealloc = tru
 }
 
 godot_variant debug_line_text(const char *text, int num) {
-    godot_array arr;
-    API->godot_array_new(&arr);
-    auto t = to_variant_unsafe(text);
-    auto n = to_variant(num);
-    array_push_back(&arr, t);
-    array_push_back(&arr, n);
+    godot_array arr = empty_array();
+    array_push_back(&arr, to_variant_unsafe(text));
+    array_push_back(&arr, to_variant(num));
     return to_variant_unsafe(arr);
 }
 
@@ -140,7 +156,10 @@ godot_variant get_param(int param, godot_variant **p_args, int p_num_args) {
     if (p_num_args == 0) // no parameters!
         return ret;
     godot_array arr = constr_godot_array(p_args, p_num_args);
-    return API->godot_array_get(&arr, param);
+
+    ret = API->godot_array_get(&arr, param);
+    free(arr);
+    return ret;
 }
 
 //////////// NATIVESCRIPT CLASS MEMBER FUNCTIONS
@@ -220,7 +239,7 @@ godot_variant setup_network(godot_object *p_instance, void *p_method_data, void 
 }
 godot_variant load_neuron_values(godot_object *p_instance, void *p_method_data, void *p_globals, int p_num_args, godot_variant **p_args) {
     godot_array data = to_array(get_param(0, p_args, p_num_args));
-    godot_variant ret;
+
     if (API->godot_array_size(&data) == 0) // empty!
         return debug_line_text("no data!!", 0);
 
@@ -228,14 +247,15 @@ godot_variant load_neuron_values(godot_object *p_instance, void *p_method_data, 
     int layers_count = API->godot_array_size(&data);
     NN.layers_count = layers_count;
     for (int i = 0; i < layers_count; ++i) {
-        godot_array layer = to_array(API->godot_array_get(&data, i));
+        const godot_array layer = to_array(API->godot_array_get(&data, i));
         int neurons_this_layer = API->godot_array_size(&layer); // layer size (num. of neurons in it)
 
         // calculate number of weights (neurons in the next layer)
         int neurons_next_layer = 0;
         if (i + 1 < layers_count) {
-            godot_array next_layer = to_array(API->godot_array_get(&data, i + 1));
+            const godot_array next_layer = to_array(API->godot_array_get(&data, i + 1));
             neurons_next_layer = API->godot_array_size(&next_layer); // layer size (num. of neurons in it)
+            free(next_layer);
         }
 
         // allocate layer memory if necessary
@@ -243,38 +263,126 @@ godot_variant load_neuron_values(godot_object *p_instance, void *p_method_data, 
 
         // for each neuron in the layer...
         for (int j = 0; j < neurons_this_layer; ++j) {
-            godot_array neuron = to_array(API->godot_array_get(&layer, j));
+            const godot_array neuron = to_array(API->godot_array_get(&layer, j));
 
-            const godot_variant activation = API->godot_array_get(&neuron, 0);
-            const godot_variant bias = API->godot_array_get(&neuron, 1);
-            const godot_array weights = to_array(API->godot_array_get(&neuron, 2));
+            const int neuron_arr_size_safety_check = API->godot_array_size(&neuron);
 
-            NN.set_activation(i, j, API->godot_variant_as_real(&activation));
-            NN.set_bias(i, j, API->godot_variant_as_real(&bias));
-
-            // for each synapses' weight in the layer...
-            int weights_per_neuron_this_layer = API->godot_array_size(&weights);
-
-            for (int k = 0; k < weights_per_neuron_this_layer; ++k) {
-                const godot_variant weight = API->godot_array_get(&weights, k);
-                NN.set_weight(i, j, k, API->godot_variant_as_real(&weight));
+            if (neuron_arr_size_safety_check > 0) {
+                const godot_variant activation = API->godot_array_get(&neuron, 0);
+                NN.set_activation(i, j, API->godot_variant_as_real(&activation));
             }
+            if (neuron_arr_size_safety_check > 1) {
+                const godot_variant bias = API->godot_array_get(&neuron, 1);
+                NN.set_bias(i, j, API->godot_variant_as_real(&bias));
+            }
+            if (neuron_arr_size_safety_check > 2) {
+                const godot_array weights = to_array(API->godot_array_get(&neuron, 2));
+                int weights_per_neuron_this_layer = API->godot_array_size(&weights);
+
+                // for each synapses' weight in the layer...
+                for (int k = 0; k < weights_per_neuron_this_layer; ++k) {
+                    const godot_variant weight = API->godot_array_get(&weights, k);
+                    NN.set_weight(i, j, k, API->godot_variant_as_real(&weight));
+                    free(weight);
+                }
+            }
+
+//            free(neuron);
+//            free(activation);
+//            free(bias);
+//            free(weights);
         }
+        free(layer);
     }
+    free(data);
+
     // set up synapse caches!
     NN.update_dendrites();
 
     NN.allocated = true;
-    return debug_line_text("neurons_done:", NN.neuron_total_count);
+    return empty_variant();
+//    return debug_line_text("neurons_done:", NN.neuron_total_count);
 }
 godot_variant retrieve_neuron_values(godot_object *p_instance, void *p_method_data, void *p_globals, int p_num_args, godot_variant **p_args) {
+
+    // this WORKS
+//    godot_pool_real_array reals; // OK
+//    API->godot_pool_real_array_new(&reals); // OK
+//
+//    API->godot_pool_real_array_append(&reals, 235234); // OK
+//
+//    godot_variant ret; // OK
+//    API->godot_variant_new_pool_real_array(&ret, &reals); // OK
+//    return ret; // OK
+
+
+    ////////
+
+    godot_variant data_var; // OK
+    API->godot_variant_new_real(&data_var, 235235); // OK
+
+    godot_pool_byte_array bytes; // OK
+    API->godot_pool_byte_array_new(&bytes); // OK
+
+    godot_array test_arr; // OK
+    API->godot_array_new(&test_arr); // OK
+
+    API->godot_array_push_back(&test_arr, &data_var); // OK
+    API->godot_array_push_back(&test_arr, &data_var); // OK
+    API->godot_array_push_back(&test_arr, &data_var); // OK
+    API->godot_array_push_back(&test_arr, &data_var); // OK
+    API->godot_array_push_back(&test_arr, &data_var); // OK
+    API->godot_array_push_back(&test_arr, &data_var); // OK
+
+//    return to_variant_unsafe(test_arr); // OK --- the array works...
+
+    godot_pool_real_array reals; // OK
+    API->godot_pool_real_array_new_with_array(&reals, &test_arr);
+
+
+//    API->godot_pool_real_array_append(&bytes, 235234); // OK
+//    API->godot_pool_byte_array_new_with_array(&bytes, &test_arr);
+//    bytes = API->godot_variant_as_pool_byte_array(&data_var);
+
+    godot_variant ret; // OK
+    API->godot_variant_new_pool_real_array(&ret, &reals); // OK
+//    API->godot_variant_new_pool_byte_array(&ret, &bytes);
+    return ret; // OK
+
+    ////////
+
+
+
+    godot_pool_byte_array pool;
+    API->godot_pool_byte_array_new(&pool);
+
+
+    pool = API->godot_variant_as_pool_byte_array(&data_var);
+
+
+
+    godot_variant pool_var;
+    API->godot_variant_new_pool_byte_array(&pool_var, &pool);
+//    API->godot_pool_byte_array_destroy(&pool);
+    return pool_var;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // primary object
     auto data = empty_array();
-
-//    // temp empty arrays
-//    auto layer_arr = empty_array();
-//    auto neuron_arr = empty_array();
-//    auto weights_arr = empty_array();
 
     // invalid data
     if (!NN.allocated)
@@ -317,13 +425,43 @@ godot_variant retrieve_neuron_values(godot_object *p_instance, void *p_method_da
         array_push_back(&data, to_variant_unsafe(layer_arr));
     }
 
-    // free temp arrays
-//    free(layer_arr);
-//    free(neuron_arr);
-//    free(weights_arr);
-
     // if everything went well....
-    return to_variant_unsafe(data);
+
+//    auto data_var = to_variant_unsafe(data, false);
+//    free(data); // redundant?
+//
+//    auto pool = API->godot_variant_as_pool_byte_array(&data_var);
+//    free(data_var); // redundant?
+//
+//    godot_variant pool_var;
+//    API->godot_variant_new_pool_byte_array(&pool_var, &pool);
+//    API->godot_pool_byte_array_destroy(&pool);
+//    free(data);
+//    return pool_var;
+
+
+
+
+
+
+
+
+
+//    return to_variant_unsafe(data);
+}
+
+godot_variant fetch_single_neuron(godot_object *p_instance, void *p_method_data, void *p_globals, int p_num_args, godot_variant **p_args) {
+
+//    godot_variant l_var = get_param(0, p_args, p_num_args);
+//    godot_variant n = get_param(1, p_args, p_num_args);
+
+    int l = to_int(get_param(0, p_args, p_num_args));
+    int n = to_int(get_param(1, p_args, p_num_args));
+
+    auto neuron = NN.get_neuron(l, n);
+    double activation = neuron->activation;
+
+    return to_variant(activation);
 }
 
 godot_variant update(godot_object *p_instance, void *p_method_data, void *p_globals, int p_num_args, godot_variant **p_args) {
@@ -340,6 +478,7 @@ void init_nativescript_methods() {
     //
     register_method("load_neuron_values", &load_neuron_values);
     register_method("retrieve_neuron_values", &retrieve_neuron_values);
+    register_method("fetch_single_neuron", &fetch_single_neuron);
     register_method("setup_network", &setup_network);
     register_method("update", &update);
 }

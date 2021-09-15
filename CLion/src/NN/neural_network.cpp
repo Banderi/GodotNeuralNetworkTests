@@ -56,21 +56,21 @@ void neural_network::update_dendrites() {
 neuron *neural_network::get_neuron(int layer, int index) {
     return &layers[layer].neurons[index];
 }
-void neural_network::set_activation(int layer, int index, float a) {
+void neural_network::set_activation(int layer, int index, double a) {
     auto l = &layers[layer];
     if (index >= l->neuron_total_count)
         return;
     auto n = &l->neurons[index];
     n->activation = a;
 }
-void neural_network::set_bias(int layer, int index, float b) {
+void neural_network::set_bias(int layer, int index, double b) {
     auto l = &layers[layer];
     if (index >= l->neuron_total_count)
         return;
     auto n = &l->neurons[index];
     n->bias = b;
 }
-void neural_network::set_weight(int layer, int index, int w_index, float weight) {
+void neural_network::set_weight(int layer, int index, int w_index, double weight) {
     auto l = &layers[layer];
     auto n = &l->neurons[index];
     if (w_index >= n->synapses_total_count)

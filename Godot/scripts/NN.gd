@@ -97,13 +97,84 @@ func update_neurons():
 				sum = max(0.0, sum)
 				n[0] = sum
 
-func update_nn():
-	# update GDNative library and retrieve results!
 
+func parenth(a, b):
+	return " (" + str(a) + "," + str(b) + ")"
+func test_identity(a, b, values = false):
+	var text = ""
+
+	text += " RAW: " + str(a == b)
+	if values:
+		text += parenth(a, b)
+	text += " --- BYTES: " + str(var2bytes(a) == var2bytes(b)) #+ parenth(var2bytes(a), var2bytes(b))
+	text += " --- TYPES: " + str(typeof(a) == typeof(b)) + parenth(typeof(a), typeof(b))
+
+	print(text)
+
+
+func fetchset_neuron_state(l, n):
+	var res = NeuralNetwork.fetch_single_neuron(l, n)
+
+	var prev = data[l][n][0]
+
+	data[l][n][0] = res
+
+	var p = 0
+	pass
+func fetchset_layer_values(l):
+	for n in data[l].size():
+		fetchset_neuron_state(l, n)
+func fetchset_full_database():
+	for l in data.size():
+		fetchset_layer_values(l)
+
+func update_nn():
+
+	# upload current input values to library
+	Profiler.clock_in("store_values")
+	NeuralNetwork.load_neuron_values(data)
+	Profiler.clock_out("store_values")
+
+
+#	var test = ["test"]
+#	var r = NeuralNetwork.get_heartbeat(test)
+#	print(r)
+#	test = r
+
+#	var l
+#	while (true):
+#		NeuralNetwork.load_neuron_values(data)
+
+
+
+	# update GDNative library!
+	Profiler.clock_in("update_nn")
 	var success = NeuralNetwork.update();
 	if success:
 		pass
-	data = NeuralNetwork.retrieve_neuron_values()
+	Profiler.clock_out("update_nn")
+
+
+	# hopefully.....
+	Profiler.clock_in("fetchset_one_by_one")
+	fetchset_full_database()
+	Profiler.clock_out("fetchset_one_by_one")
+
+#	var res = NeuralNetwork.retrieve_neuron_values()
+#	print(var2bytes(res).size())
+#	print(var2bytes(res) == var2bytes(data))
+#	print(var2bytes(res[0][0][0]) == var2bytes(data[0][0][0]))
+
+#	var res_converted = bytes2var(res)
+#
+#	var a = res_converted
+#	var b = data
+##	print("%.30f %.30f" % [a, b])
+#	test_identity(a, b)
+##	test_identity(res[0][0][0], data[0][0][0], true)
+#
+#
+#	data = res_converted # memory leak when assigning to our data array and I don't know WHYY
 	pass
 
 ###########
@@ -119,11 +190,14 @@ func _ready():
 
 	# randomize weights
 	Profiler.clock_in("rand_weights_local")
-	NN.randomize_neuron_weights(0, false)
-	NN.randomize_neuron_weights(1, true, -4000, -500)
-	NN.randomize_neuron_weights(2, true, -2000, -500)
-	NN.randomize_neuron_weights(3, true, -2000, -500)
+	randomize_neuron_weights(0, false)
+	randomize_neuron_weights(1, true, -4000, -500)
+	randomize_neuron_weights(2, true, -2000, -500)
+	randomize_neuron_weights(3, true, -2000, -500)
 	Profiler.clock_out("rand_weights_local")
 
 	# upload data to GDNative...
 	NeuralNetwork.load_neuron_values(data)
+#	var res = NeuralNetwork.retrieve_neuron_values()
+#	print(var2bytes(res[0][0]) == var2bytes(data[0][0]))
+#	pass

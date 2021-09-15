@@ -20,6 +20,7 @@ func get_pos(layer, index, max_index):
 #	synapses = true
 
 func _draw():
+
 	Profiler.clock_in("draw")
 
 	# draw graphics
