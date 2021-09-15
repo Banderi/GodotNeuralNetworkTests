@@ -3,25 +3,10 @@ extends Node
 var profiling = {
 	"fps": 0,
 	"profiling": 0,
-##	"clock_fetching": 0,
 	"frame_delta": null,
-#	"frame_total": null,
-#		"update_local": null,
-#			"rand_activ_local": null,
-#			"rand_bias_local": null,
-#			"rand_weights_local": null,
-#		"update_gdnative": null,
-#			"store_values": null,
-#			"update_nn": null,
-#			"fetchset_one_by_one": null,
-#		"draw": null,
-#			"draw_text": null,
-#			"draw_neurons": null,
-#			"draw_synapses_first": null,
-#			"draw_synapses_second": null,
-##			"draw_synapses": null,
 }
 var profiling_temp = {} # temp
+
 func clock_in(id):
 	var t = OS.get_ticks_usec()
 	if !profiling_temp.has(id):

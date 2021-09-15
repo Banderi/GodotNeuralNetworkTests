@@ -26,7 +26,7 @@ func draw_text():
 
 		text_prof_line("update_local")
 		text_prof_line("input_activ_update", "> ")
-		text_prof_line("rand_bias_local", "> ")
+#		text_prof_line("rand_bias_local", "> ")
 		text_prof_line("rand_weights_local", "> ")
 
 		text_line("")
@@ -59,7 +59,7 @@ func _process(delta):
 
 	# local updates
 	Profiler.clock_in("update_local")
-#	NN.update_local_randomizations(delta)
+	NN.update_local_randomizations(delta)
 	NN.update_local_input(drawingBoard)
 	Profiler.clock_out("update_local")
 
