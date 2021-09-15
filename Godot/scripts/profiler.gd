@@ -1,7 +1,5 @@
 extends Node
 
-var label = null
-
 var profiling = {
 	"fps": 0,
 	"profiling": 0,
@@ -86,12 +84,56 @@ func time(id, corr = 0.001, average = true, unit = ""):
 
 # GDNative "load_neuron_values" call: 2.02~ microseconds
 
-func text_line(txt):
-	label.text += txt + "\n"
-func text_prof_line(id, indentation = "", corr = 0.001, average = true, unit = " ms"):
-	text_line(indentation + id + ": " + time(id, corr, average, unit))
+#func text_line(txt):
+#	label.text += txt + "\n"
+#func text_prof_line(id, indentation = "", corr = 0.001, average = true, unit = " ms"):
+#	text_line(indentation + id + ": " + time(id, corr, average, unit))
+#
+#func draw_text():
+#
+#	# fps
+#	profiling["fps"] = Performance.get_monitor(0)
+#	profiling_temp["fps"][1] = profiling["fps"]
+#	Profiler.clock_flush("fps")
+#
+#	# SPECIAL...
+#	profiling_temp["profiling"][2] += 1 # flushes tally
+#	profiling_temp["profiling"][3] += profiling["profiling"] # total!
+#	profiling_temp["profiling"][4] = profiling_temp["profiling"][3] / profiling_temp["profiling"][2] # average!!
+#	profiling["profiling"] = 0
+#
+#	if label != null:
+#		label.text = ""
+#
+#		text_prof_line("fps", "", 1.0, false, "")
+#		text_prof_line("profiling")
+#
+#		text_prof_line("frame_delta", "", 1.0, false)
+#		text_prof_line("frame_total")
+#
+#		text_line("")
+#
+#		text_prof_line("update_local")
+#		text_prof_line("rand_activ_local", "> ")
+#		text_prof_line("rand_bias_local", "> ")
+#		text_prof_line("rand_weights_local", "> ")
+#
+#		text_line("")
+#
+#		text_prof_line("update_gdnative")
+#		text_prof_line("store_values", "> ")
+#		text_prof_line("update_nn", "> ")
+#		text_prof_line("fetchset_one_by_one", "> ")
+#
+#		text_line("")
+#
+#		text_prof_line("draw")
+#		text_prof_line("draw_text", "> ")
+#		text_prof_line("draw_neurons", "> ")
+#		text_prof_line("draw_synapses_first", "> ")
+#		text_prof_line("draw_synapses_second", "> ")
 
-func draw_text():
+func _process(delta):
 
 	# fps
 	profiling["fps"] = Performance.get_monitor(0)
@@ -103,37 +145,6 @@ func draw_text():
 	profiling_temp["profiling"][3] += profiling["profiling"] # total!
 	profiling_temp["profiling"][4] = profiling_temp["profiling"][3] / profiling_temp["profiling"][2] # average!!
 	profiling["profiling"] = 0
-
-	if label != null:
-		label.text = ""
-
-		text_prof_line("fps", "", 1.0, false, "")
-		text_prof_line("profiling")
-
-		text_prof_line("frame_delta", "", 1.0, false)
-		text_prof_line("frame_total")
-
-		text_line("")
-
-		text_prof_line("update_local")
-		text_prof_line("rand_activ_local", "> ")
-		text_prof_line("rand_bias_local", "> ")
-		text_prof_line("rand_weights_local", "> ")
-
-		text_line("")
-
-		text_prof_line("update_gdnative")
-		text_prof_line("store_values", "> ")
-		text_prof_line("update_nn", "> ")
-		text_prof_line("fetchset_one_by_one", "> ")
-
-		text_line("")
-
-		text_prof_line("draw")
-		text_prof_line("draw_text", "> ")
-		text_prof_line("draw_neurons", "> ")
-		text_prof_line("draw_synapses_first", "> ")
-		text_prof_line("draw_synapses_second", "> ")
 
 func _ready():
 	for id in profiling:

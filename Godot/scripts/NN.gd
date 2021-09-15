@@ -34,6 +34,11 @@ var config = [
 	}
 ]
 
+# ==== TOTALS =====
+# layers:   4
+# neurons:  4166
+# synapses: 164840
+
 func check_init_data_array_sizes():
 
 	# first, add layers as needed if any is missing
@@ -47,6 +52,21 @@ func check_init_data_array_sizes():
 		# secondly, add neurons as needed if any is missing
 		while layer.size() < layer_info["size"]:
 			layer.push_back([0.0, 0.0, []])
+
+func parenth(a, b):
+	return " (" + str(a) + "," + str(b) + ")"
+func test_identity(a, b, values = false):
+	var text = ""
+
+	text += " RAW: " + str(a == b)
+	if values:
+		text += parenth(a, b)
+	text += " --- BYTES: " + str(var2bytes(a) == var2bytes(b)) #+ parenth(var2bytes(a), var2bytes(b))
+	text += " --- TYPES: " + str(typeof(a) == typeof(b)) + parenth(typeof(a), typeof(b))
+
+	print(text)
+
+###
 
 func randomize_neuron_inputs():
 	for n in data[0]:
@@ -89,30 +109,9 @@ func update_local_randomizations(delta):
 	randomize_neuron_inputs()
 	Profiler.clock_out("rand_activ_local")
 
-
-func parenth(a, b):
-	return " (" + str(a) + "," + str(b) + ")"
-func test_identity(a, b, values = false):
-	var text = ""
-
-	text += " RAW: " + str(a == b)
-	if values:
-		text += parenth(a, b)
-	text += " --- BYTES: " + str(var2bytes(a) == var2bytes(b)) #+ parenth(var2bytes(a), var2bytes(b))
-	text += " --- TYPES: " + str(typeof(a) == typeof(b)) + parenth(typeof(a), typeof(b))
-
-	print(text)
-
-
 func fetchset_neuron_state(l, n):
 	var res = NeuralNetwork.fetch_single_neuron(l, n)
-
-	var prev = data[l][n][0]
-
 	data[l][n][0] = res
-
-	var p = 0
-	pass
 func fetchset_layer_values(l):
 	for n in data[l].size():
 		fetchset_neuron_state(l, n)
