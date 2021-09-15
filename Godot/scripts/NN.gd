@@ -105,9 +105,22 @@ func update_local_randomizations(delta):
 		Profiler.clock_out("rand_weights_local")
 
 	# randomize inputs
-	Profiler.clock_in("rand_activ_local")
-	randomize_neuron_inputs()
-	Profiler.clock_out("rand_activ_local")
+#	Profiler.clock_in("rand_activ_local")
+#	randomize_neuron_inputs()
+#	Profiler.clock_out("rand_activ_local")
+func update_local_input(board):
+
+	# update inputs from drawing board
+	Profiler.clock_in("input_activ_update")
+	var inputs = board.fetch_values()
+	for n in data[0].size():
+		data[0][n][0] = inputs[n]
+	Profiler.clock_out("input_activ_update")
+
+	# upload current input values to library
+	Profiler.clock_in("store_values")
+	NeuralNetwork.load_neuron_values(data)
+	Profiler.clock_out("store_values")
 
 func fetchset_neuron_state(l, n):
 	var res = NeuralNetwork.fetch_single_neuron(l, n)
@@ -120,12 +133,6 @@ func fetchset_full_database():
 		fetchset_layer_values(l)
 
 func update_nn():
-
-	# upload current input values to library
-	Profiler.clock_in("store_values")
-	NeuralNetwork.load_neuron_values(data)
-	Profiler.clock_out("store_values")
-
 	# update GDNative library!
 	Profiler.clock_in("update_nn")
 	var success = NeuralNetwork.update();
@@ -160,6 +167,3 @@ func _ready():
 
 	# upload data to GDNative...
 	NeuralNetwork.load_neuron_values(data)
-#	var res = NeuralNetwork.retrieve_neuron_values()
-#	print(var2bytes(res[0][0]) == var2bytes(data[0][0]))
-#	pass

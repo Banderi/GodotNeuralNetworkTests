@@ -33,6 +33,19 @@ func draw(pos, inbetweens = false):
 
 		last_pos = pos
 
+func fetch_values():
+	var inputs = []
+	img.lock()
+	if img != null:
+		for x in 64:
+			for y in 64:
+				var col = img.get_pixel(x, y)
+				inputs.push_back(col.gray())
+	img.unlock()
+	return inputs
+
+###
+
 func _process(delta):
 	# click
 	if Input.is_action_pressed("mouse_left"):
