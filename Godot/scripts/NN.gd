@@ -70,6 +70,25 @@ func randomize_neuron_weights(layer, randomize_bias, bias_min = 0, bias_max = 0)
 			if randomize_bias:
 				n[1] = rand_range(bias_min, bias_max)
 
+var time = 0.0
+func update_local_randomizations(delta):
+	time += delta
+
+	# randomize weights
+	if time > 1.0:
+		time = 0.0
+		Profiler.clock_in("rand_weights_local")
+		randomize_neuron_weights(0, false)
+		randomize_neuron_weights(1, true, -4000, -500)
+		randomize_neuron_weights(2, true, -2000, -500)
+		randomize_neuron_weights(3, true, -2000, -500)
+		Profiler.clock_out("rand_weights_local")
+
+	# randomize inputs
+	Profiler.clock_in("rand_activ_local")
+	randomize_neuron_inputs()
+	Profiler.clock_out("rand_activ_local")
+
 
 func parenth(a, b):
 	return " (" + str(a) + "," + str(b) + ")"
