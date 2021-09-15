@@ -3,6 +3,7 @@ extends Node
 var label = null
 
 var profiling = {
+	"fps": 0,
 	"profiling": 0,
 #	"clock_fetching": 0,
 	"frame_delta": null,
@@ -26,7 +27,7 @@ var profiling_temp = {} # temp
 func clock_in(id):
 	var t = OS.get_ticks_usec()
 	if !profiling_temp.has(id):
-		profiling_temp[id] = [0,0]
+		profiling_temp[id] = [0,0,0,0,0]
 	profiling_temp[id][0] = t # store first timestamp temporarily
 
 	# SELF PROFILING...
@@ -34,14 +35,14 @@ func clock_in(id):
 func clock_out(id, flush = true):
 	var t = OS.get_ticks_usec()
 	if !profiling_temp.has(id):
-		profiling_temp[id] = [0,0]
+		profiling_temp[id] = [0,0,0,0,0]
 	var diff = t - profiling_temp[id][0] # time difference between current and last timestamp
 
 	# retrieve temp storage
-	var tally_stored = profiling_temp[id][1]
+	var total_time_stored = profiling_temp[id][1]
 
 	# final tally -- add up to the other values (if present)
-	var final = tally_stored + diff
+	var final = total_time_stored + diff
 
 	# update stored values
 	profiling[id] = final
@@ -56,15 +57,21 @@ func clock_flush(id):
 
 	# flush out temp storage
 	if !profiling_temp.has(id):
-		profiling_temp[id] = [0,0]
-	profiling_temp[id][1] = 0
+		profiling_temp[id] = [0,0,0,0,0]
+	profiling_temp[id][2] += 1 # flushes tally
+	profiling_temp[id][3] += profiling_temp[id][1] # total!
+	profiling_temp[id][4] = profiling_temp[id][3] / profiling_temp[id][2] # average!!
+	profiling_temp[id][1] = 0 # flush diff
 
 	# SELF PROFILING...
 	profiling["profiling"] += OS.get_ticks_usec() - t
-func time(id, corr = 0.001):
+func time(id, corr = 0.001, average = true, unit = ""):
 	if profiling[id] == null:
 		return "--"
-	return str(profiling[id] * corr)
+	if average:
+		return str(profiling_temp[id][4] * corr) + unit
+	else:
+		return str(profiling[id] * corr) + unit
 
 # for loop - 1 pass line cycle: 0.031~ microseconds
 # for loop - 10 pass line cycle: 0.072~ microseconds
@@ -79,13 +86,56 @@ func time(id, corr = 0.001):
 
 # GDNative "load_neuron_values" call: 2.02~ microseconds
 
+func text_line(txt):
+	label.text += txt + "\n"
+func text_prof_line(id, indentation = "", corr = 0.001, average = true, unit = " ms"):
+	text_line(indentation + id + ": " + time(id, corr, average, unit))
+
 func draw_text():
+
+	# fps
+	profiling["fps"] = Performance.get_monitor(0)
+	profiling_temp["fps"][1] = profiling["fps"]
+	Profiler.clock_flush("fps")
+
+	# SPECIAL...
+	profiling_temp["profiling"][2] += 1 # flushes tally
+	profiling_temp["profiling"][3] += profiling["profiling"] # total!
+	profiling_temp["profiling"][4] = profiling_temp["profiling"][3] / profiling_temp["profiling"][2] # average!!
+	profiling["profiling"] = 0
 
 	if label != null:
 		label.text = ""
-		for id in profiling:
-			var v = time(id)
-			label.text += "\n" + id + ": " + v
-			pass
 
-	profiling["profiling"] = 0 # SPECIAL...
+		text_prof_line("fps", "", 1.0, false, "")
+		text_prof_line("profiling")
+
+		text_prof_line("frame_delta", "", 1.0, false)
+		text_prof_line("frame_total")
+
+		text_line("")
+
+		text_prof_line("update_local")
+		text_prof_line("rand_activ_local", "> ")
+		text_prof_line("rand_bias_local", "> ")
+		text_prof_line("rand_weights_local", "> ")
+
+		text_line("")
+
+		text_prof_line("update_gdnative")
+		text_prof_line("store_values", "> ")
+		text_prof_line("update_nn", "> ")
+		text_prof_line("fetchset_one_by_one", "> ")
+
+		text_line("")
+
+		text_prof_line("draw")
+		text_prof_line("draw_text", "> ")
+		text_prof_line("draw_neurons", "> ")
+		text_prof_line("draw_synapses_first", "> ")
+		text_prof_line("draw_synapses_second", "> ")
+
+func _ready():
+	for id in profiling:
+		profiling_temp[id] = [0,0,0,0,0]
+

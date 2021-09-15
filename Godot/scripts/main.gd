@@ -12,6 +12,8 @@ func _process(delta):
 	time += delta
 	time2 += delta
 
+	Profiler.clock_in("update_local")
+
 	# randomize weights
 	if time > 1.0:
 		time = 0.0
@@ -32,7 +34,10 @@ func _process(delta):
 	NN.update_nn()
 	Profiler.clock_out("update_gdnative")
 
+	Profiler.clock_out("update_local")
+
 	# draw
+	Profiler.clock_in("draw")
 	if time2 > 0.2:
 		time2 = 0.0
 		backdraw.update()
@@ -41,6 +46,24 @@ func _process(delta):
 	Profiler.clock_in("draw_text")
 	Profiler.draw_text()
 	Profiler.clock_out("draw_text")
+	Profiler.clock_out("draw", false)
+	Profiler.clock_flush("draw")
+
+	# consolidate some profiling times...
+#	Profiler.profiling["draw"] = Profiler.profiling["draw_text"]
+#	Profiler.profiling["draw"] += Profiler.profiling["draw_text"]
+#	Profiler.profiling["draw"] += Profiler.profiling["draw_synapses_first"]
+#	Profiler.profiling["draw"] += Profiler.profiling["draw_synapses_second"]
+#	Profiler.profiling_temp["draw"][1] = Profiler.profiling["draw"]
+#	Profiler.clock_flush("draw")
+
+#	# fps
+#	Profiler.profiling_temp["fps"][1] = Performance.get_monitor(0)
+#	Profiler.clock_flush("fps")
+
+#	# SPECIAL
+#	Profiler.profiling_temp["profiling"][1] = Profiler.profiling["profiling"]
+#	Profiler.clock_flush("profiling")
 
 	Profiler.clock_out("frame_total")
 

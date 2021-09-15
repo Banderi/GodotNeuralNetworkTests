@@ -2,7 +2,7 @@ extends Node2D
 
 var onlyfirstlayer = false
 
-var o_x = 300
+var o_x = 350
 var o_y = 300
 
 func get_pos(layer, index, max_index):
@@ -25,6 +25,7 @@ func draw_synapse(pos, l, n, w, total_synapses):
 
 func _draw():
 	# draw synapses
+	Profiler.clock_in("draw")
 	if onlyfirstlayer:
 		Profiler.clock_in("draw_synapses_first")
 	else:
@@ -70,3 +71,4 @@ func _draw():
 		Profiler.clock_out("draw_synapses_first")
 	else:
 		Profiler.clock_out("draw_synapses_second")
+	Profiler.clock_out("draw", false)

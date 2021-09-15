@@ -1,6 +1,6 @@
 extends Node2D
 
-var o_x = 300
+var o_x = 350
 var o_y = 300
 
 func get_pos(layer, index, max_index):
@@ -17,6 +17,7 @@ func get_pos(layer, index, max_index):
 
 func _draw():
 	Profiler.clock_in("draw_neurons")
+	Profiler.clock_in("draw")
 
 	# draw graphics
 	for l in range(NN.data.size()):
@@ -36,6 +37,8 @@ func _draw():
 				draw_rect(Rect2(pos.x - 1, pos.y - 1, 8, 8), Color(1,1,1,0.5))
 			draw_rect(Rect2(pos.x, pos.y, 6, 6), Color(0,0,0,opacity).linear_interpolate(Color(1,1,1,opacity), neuron[0]))
 
+
+	Profiler.clock_out("draw", false)
 	Profiler.clock_out("draw_neurons")
 
 func _ready():
