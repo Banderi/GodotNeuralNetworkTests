@@ -103,22 +103,30 @@ func initialize_network_data():
 # - calculate COST on the GDNative library end
 # - calculate backpropagation on the GDNative library end
 
-var correct_digit = -2
+var correct_digit = -99
 var network_answer_digit = -2
+var network_answer_cost = 0.0
 
 func get_favorable_final_layer():
 	var values = [0,0,0,0,0,0,0,0,0,0] # default - no neurons are lit
-	if correct_digit != -2:
+	if correct_digit >= -1:
 		values[correct_digit] = 1.0
 	return values
 func get_network_answer_digit():
-	network_answer_digit = NeuralNetwork.get_answer_digit()
-	var res = network_answer_digit
-	if network_answer_digit == -1:
-		res = "?"
-	elif res == -2:
-		res = ""
-	return res
+	var res = NeuralNetwork.get_answer_digit()
+	network_answer_digit = res[0]
+	network_answer_cost = res[1]
+
+	var txt = network_answer_digit
+	if txt == -1:
+		txt = "?"
+	elif txt < -1:
+		txt = ""
+	return txt
+
+var cost_allowance_coeff = 0.5
+func is_cost_acceptable():
+	return 1.0 - min(network_answer_cost * cost_allowance_coeff, 1.0)
 
 var time = 0.0
 func update_backpropagation(delta):

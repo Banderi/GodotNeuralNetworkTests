@@ -64,9 +64,9 @@ __meta__ = {
 
 [node name="drawingBoard" type="TextureRect" parent="."]
 margin_left = 320.0
-margin_top = 140.0
+margin_top = 120.0
 margin_right = 384.0
-margin_bottom = 204.0
+margin_bottom = 184.0
 rect_scale = Vector2( 5, 5 )
 texture = SubResource( 2 )
 stretch_mode = 2
@@ -77,9 +77,9 @@ __meta__ = {
 
 [node name="btn_clear" type="Button" parent="."]
 margin_left = 320.502
-margin_top = 81.7401
+margin_top = 79.7401
 margin_right = 455.502
-margin_bottom = 116.74
+margin_bottom = 114.74
 custom_fonts/font = SubResource( 3 )
 text = "Clear"
 __meta__ = {
@@ -87,10 +87,10 @@ __meta__ = {
 }
 
 [node name="ans" type="ColorRect" parent="."]
-margin_left = 835.128
-margin_top = 215.964
-margin_right = 948.128
-margin_bottom = 372.964
+margin_left = 835.0
+margin_top = 200.0
+margin_right = 948.0
+margin_bottom = 357.0
 color = Color( 0, 0, 0, 0.627451 )
 __meta__ = {
 "_edit_lock_": true,
@@ -122,11 +122,23 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
+[node name="cost" type="Label" parent="ans"]
+margin_left = 10.0
+margin_top = 128.0
+margin_right = 97.0
+margin_bottom = 151.0
+custom_fonts/font = SubResource( 4 )
+text = "0.024"
+align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
 [node name="shouldbe" type="Control" parent="."]
 margin_left = 281.0
-margin_top = 462.0
+margin_top = 439.373
 margin_right = 807.0
-margin_bottom = 577.0
+margin_bottom = 554.373
 __meta__ = {
 "_edit_lock_": true,
 "_edit_use_anchors_": false
@@ -262,6 +274,32 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
+[node name="btn_none" type="Button" parent="shouldbe"]
+margin_left = 88.0
+margin_top = 50.0
+margin_right = 187.0
+margin_bottom = 87.0
+rect_min_size = Vector2( 30, 0 )
+custom_fonts/font = SubResource( 3 )
+text = "none"
+__meta__ = {
+"_edit_lock_": true,
+"_edit_use_anchors_": false
+}
+
+[node name="btn_clear" type="Button" parent="shouldbe"]
+margin_left = 190.0
+margin_top = 50.0
+margin_right = 306.0
+margin_bottom = 87.0
+rect_min_size = Vector2( 30, 0 )
+custom_fonts/font = SubResource( 3 )
+text = "clear"
+__meta__ = {
+"_edit_lock_": true,
+"_edit_use_anchors_": false
+}
+
 [node name="Label" type="Label" parent="shouldbe"]
 margin_left = 407.104
 margin_top = 13.1213
@@ -287,3 +325,5 @@ __meta__ = {
 [connection signal="pressed" from="shouldbe/HBoxContainer/btn_8" to="." method="_on_btn_shouldbe_pressed" binds= [ 8 ]]
 [connection signal="pressed" from="shouldbe/HBoxContainer/btn_9" to="." method="_on_btn_shouldbe_pressed" binds= [ 9 ]]
 [connection signal="pressed" from="shouldbe/HBoxContainer/btn_0" to="." method="_on_btn_shouldbe_pressed" binds= [ 0 ]]
+[connection signal="pressed" from="shouldbe/btn_none" to="." method="_on_btn_shouldbe_pressed" binds= [ -2 ]]
+[connection signal="pressed" from="shouldbe/btn_clear" to="." method="_on_btn_shouldbe_pressed" binds= [ -99 ]]

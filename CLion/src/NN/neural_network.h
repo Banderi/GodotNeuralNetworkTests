@@ -50,6 +50,7 @@ public:
     bool update_network(); // here the magic happens!!!!!!!
     bool update_backpropagation();
 
+    double get_result_cost();
     int get_answer_digit();
 };
 

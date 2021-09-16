@@ -150,6 +150,15 @@ bool neural_network::update_backpropagation() {
     return true;
 }
 
+double neural_network::get_result_cost() {
+    double total_cost = 0.0;
+    for (int n = 0; n < outputs()->neuron_total_count; ++n) {
+        neuron_obj *neuron = &outputs()->neurons[n];
+        double diff = neuron->activation - neuron->activation_GOAL_FAVORABLE;
+        total_cost += (diff * diff);
+    }
+    return total_cost;
+}
 int neural_network::get_answer_digit() {
     struct {
         int digit = -2;

@@ -325,7 +325,13 @@ godot_variant update_backpropagation(godot_object *p_instance, void *p_method_da
 
 godot_variant get_answer_digit(godot_object *p_instance, void *p_method_data, void *p_globals, int p_num_args, godot_variant **p_args) {
     int answer = NN.get_answer_digit();
-    return to_variant(answer);
+    double cost = NN.get_result_cost();
+
+    auto arr = empty_array();
+    array_push_back(&arr, to_variant(answer));
+    array_push_back(&arr, to_variant(cost));
+
+    return to_variant_unsafe(arr);
 }
 
 void init_nativescript_methods() {

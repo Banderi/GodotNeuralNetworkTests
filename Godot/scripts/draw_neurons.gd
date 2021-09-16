@@ -1,7 +1,7 @@
 extends Node2D
 
 var o_x = 320
-var o_y = 300
+var o_y = 280
 
 func get_pos(layer, index, max_index):
 

@@ -6,6 +6,7 @@ onready var backdraw2 = $draw/back2
 onready var label = $draw/Label
 onready var drawingBoard = $drawingBoard
 onready var answer = $ans/digit
+onready var cost = $ans/cost
 onready var shouldbe = $shouldbe/Label
 
 ###
@@ -58,11 +59,27 @@ func draw_text():
 		text_line(str(drawingBoard.get_local_mouse_position()))
 
 		# I guess I can do this in here?
-		var correct_digit = NN.correct_digit
-		if correct_digit == -2:
-			correct_digit = "--"
+		update_cost_and_answer_texts()
+
+func update_cost_and_answer_texts():
+	# update result text
+	answer.text = str(NN.get_network_answer_digit())
+	# update "should be" text
+	var correct_digit = NN.correct_digit
+	if correct_digit == -99:
+		shouldbe.text = "Should be: --"
+	elif correct_digit < 0:
+		shouldbe.text = "Should be: none"
+	else:
 		shouldbe.text = "Should be: " + str(correct_digit)
-		answer.text = str(NN.get_network_answer_digit())
+	# update cost text
+	var answer_cost = stepify(NN.network_answer_cost, 0.001)
+	cost.modulate = Color(1,0,0).linear_interpolate(Color(0,1,0), NN.is_cost_acceptable())
+	if correct_digit < -2:
+		answer_cost = ""
+	elif answer_cost > 100:
+		answer_cost = str(">100(!!)")
+	cost.text = str(answer_cost)
 
 ###
 
@@ -111,6 +128,8 @@ func _ready():
 	backdraw.onlyfirstlayer = true
 	backdraw2.onlyfirstlayer = false
 
+###
 
 func _on_btn_shouldbe_pressed(digit):
 	NN.correct_digit = digit
+#	update_cost_and_answer_texts()
