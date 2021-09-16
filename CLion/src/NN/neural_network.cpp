@@ -3,7 +3,7 @@
 
 neural_network NN;
 
-void neural_network::allocate_memory(int layer, int neuron_count, int next_layer_neur_count) {
+void neural_network::allocate_memory(int layer, int neuron_count, int next_layer_neur_count, int prev_layer_neur_count) {
     // skip if already allocated.
     if (allocated)
         return;
@@ -25,6 +25,8 @@ void neural_network::allocate_memory(int layer, int neuron_count, int next_layer
         neuron_obj *n = &layers[layer].neurons[i];
         n->synapses = (synapse_obj*)calloc(next_layer_neur_count, sizeof(synapse_obj)); // oh boy...
         n->synapses_total_count = next_layer_neur_count;
+        n->parent_dendrites = (synapse_obj**)calloc(prev_layer_neur_count, sizeof(synapse_obj*));
+        n->parent_dendrites_total_count = prev_layer_neur_count;
     }
 
     neuron_total_count += neuron_count;
@@ -46,8 +48,10 @@ void neural_network::update_dendrites() {
             // for each synapse
             for (int s = 0; s < neuron->synapses_total_count; ++s) {
                 auto synapse = &neuron->synapses[s];
-                synapse->termination = get_neuron(l + 1, s);
-                int a = 1;
+                auto termination = get_neuron(l + 1, s);
+                synapse->owner = neuron;
+                synapse->termination = termination;
+                termination->parent_dendrites[n] = synapse;
             }
         }
     }
@@ -145,8 +149,87 @@ bool neural_network::update_network() {
 }
 bool neural_network::update_backpropagation() {
 
-    // TODO!!!!!!!!!
+    // for each layer (starting from the outputs, backwards)
+    for (int l = layers_count - 1; l > 0; --l) {
+        auto layer = layers[l];
 
+        // these change PER LAYER
+        double BIAS_coeff = 0.0;
+        double WEIGHT_coeff = 0.6;
+        double ACTIVATION_coeff = 0.7;
+        if (l < layers_count - 1) {
+            BIAS_coeff = 0.3;
+            WEIGHT_coeff = 0.5;
+            ACTIVATION_coeff = 0.4;
+        }
+        if (l == 1) {
+            BIAS_coeff = 0.7;
+            WEIGHT_coeff = 0.9;
+            ACTIVATION_coeff = 0.0; // useless for the second layer (the first are inputs, so the propagation stops)
+        }
+
+        // for each neuron
+        for (int n = 0; n < layer.neuron_total_count; ++n) {
+            auto neuron = &layer.neurons[n];
+
+            unsigned long long total_dendrites = neuron->parent_dendrites_total_count;
+            double score_gradient = neuron->activation_GOAL_FAVORABLE - neuron->activation; // this is ultimately the goal of the child neuron. how much should the total be changed by??
+            double score_gradient_per_synapse = score_gradient / (double)total_dendrites; // this is the score goal, but scaled by the number of parent neurons.
+
+
+
+            // child's BIAS
+            neuron->bias = score_gradient * BIAS_coeff - (double)total_dendrites;
+//            neuron->bias += score_gradient * BIAS_coeff;
+            if (neuron->bias > 100.0) // clamp BIAS
+                neuron->bias = 100.0;
+            if (neuron->bias < -100.0)
+                neuron->bias = -100.0;
+
+
+            // for each synapse (backwards)
+            for (int s = 0; s < total_dendrites; ++s) {
+                auto synapse = neuron->parent_dendrites[s];
+                auto parent = synapse->owner;
+
+                // TODO: MAGIC!
+
+//                neuron->bias = 0;
+//                // child's BIAS
+////                neuron->bias += score_gradient * BIAS_coeff;
+//                if (neuron->bias > 100.0) // clamp BIAS
+//                    neuron->bias = 100.0;
+//                if (neuron->bias < -100.0)
+//                    neuron->bias = -100.0;
+//
+//                // synapse's WEIGHT
+//                synapse->weight += score_gradient_per_synapse * (parent->activation+0.00) * WEIGHT_coeff;
+//                if (synapse->weight > 1.0) // clamp WEIGHT
+//                    synapse->weight = 1.0;
+//                if (synapse->weight < -1.0)
+//                    synapse->weight = -1.0;
+//
+//                // parent's ACTIVATION
+//                parent->activation_GOAL_FAVORABLE = parent->activation; // default
+//                parent->activation_GOAL_FAVORABLE = parent->activation + score_gradient_per_synapse * ACTIVATION_coeff;
+////                parent->activation_GOAL_FAVORABLE = 1.0;
+
+
+                // TODO: MAGIC!
+
+                // synapse's WEIGHT
+                synapse->weight += score_gradient_per_synapse * (parent->activation + 0.0);// * WEIGHT_coeff;
+                if (synapse->weight > 1.0) // clamp WEIGHT
+                    synapse->weight = 1.0;
+                if (synapse->weight < -1.0)
+                    synapse->weight = -1.0;
+
+                // parent's ACTIVATION
+                parent->activation_GOAL_FAVORABLE = parent->activation; // default
+                parent->activation_GOAL_FAVORABLE = parent->activation + score_gradient_per_synapse;// * ACTIVATION_coeff;
+            }
+        }
+    }
     return true;
 }
 
@@ -181,15 +264,4 @@ int neural_network::get_answer_digit() {
             return -1; // unsure between multiple numbers.
     } else
         return -2; // nothing close to a number identified.
-
-//    var l = data.size() - 1
-//    for n in data[l].size():
-//        var neuron = data[l][n]
-//        if neuron[0] > n_highest[0]:
-//            n_second_highest = n_highest.duplicate()
-//            n_highest = n.duplicate()
-//
-//    if n_highest[0] > 0.5: # threshold for certainty
-//    if n_highest[0] - n_second_highest[0] > 0.2: # unsured between two values
-//    network_answer_digit = -1
 }

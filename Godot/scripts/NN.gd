@@ -103,11 +103,13 @@ func initialize_network_data():
 # - calculate COST on the GDNative library end
 # - calculate backpropagation on the GDNative library end
 
-var correct_digit = -99
+var correct_digit = null
 var network_answer_digit = -2
 var network_answer_cost = 0.0
 
 func get_favorable_final_layer():
+	if correct_digit == null:
+		return null
 	var values = [0,0,0,0,0,0,0,0,0,0] # default - no neurons are lit
 	if correct_digit >= -1:
 		values[correct_digit] = 1.0
@@ -131,7 +133,7 @@ func is_cost_acceptable():
 var time = 0.0
 func update_backpropagation(delta):
 	time += delta
-	if time > 0.0:
+	if time > 0.0 && correct_digit != null:
 		time = 0.0
 		Profiler.clock_in("input_backprop")
 
@@ -187,7 +189,16 @@ func update_local_input(board):
 
 func fetchset_neuron_state(l, n):
 	var res = NeuralNetwork.fetch_single_neuron(l, n)
-	data[l][n][0] = res
+	data[l][n][0] = res[0] # activation
+	data[l][n][1] = res[1] # bias
+
+#	for s in data[l][n][2].size():
+#		var weight = NeuralNetwork.fetch_neuron_synapse_single(l, n, s) # this is inSANELY SLOWW
+#		data[l][n][2][s] = weight # synapses!!
+
+#	var syn = NeuralNetwork.fetch_neuron_synapse_weights(l, n) # this is inSANELY SLOWW
+#	data[l][n][2] = syn # synapses!!
+
 func fetchset_layer_values(l):
 	for n in data[l].size():
 		fetchset_neuron_state(l, n)

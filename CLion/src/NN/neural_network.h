@@ -11,6 +11,8 @@ typedef struct neuron_obj {
     double bias = 0.0;
     synapse_obj *synapses = nullptr; // <---- ARRAY
     unsigned long long synapses_total_count = 0;
+    synapse_obj **parent_dendrites = nullptr; // <---- ARRAY
+    unsigned long long parent_dendrites_total_count = 0;
     //
     double activation_GOAL_FAVORABLE = 0.0;
     double bias_COMPUTED_COST_SCORE = 0.0;
@@ -19,7 +21,8 @@ typedef struct neuron_obj {
 typedef struct synapse_obj {
     double weight = 0.0;
     double weight_COMPUTED_COST_SCORE = 0.0;
-    neuron_obj *termination{};
+    neuron_obj *owner = nullptr;
+    neuron_obj *termination = nullptr;
 } synapse_obj;
 
 typedef struct layer_obj {
@@ -36,7 +39,7 @@ public:
     int layers_count = 0;
     unsigned long long neuron_total_count = 0;
 
-    void allocate_memory(int layer, int neuron_count, int next_layer_neur_count);
+    void allocate_memory(int layer, int neuron_count, int next_layer_neur_count, int prev_layer_neur_count);
     void update_dendrites();
 
     neuron_obj *get_neuron(int layer, int index);

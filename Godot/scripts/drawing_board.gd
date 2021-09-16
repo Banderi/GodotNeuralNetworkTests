@@ -66,7 +66,7 @@ func _on_drawingBoard_mouse_exited():
 func _on_btn_clear_pressed():
 	img.fill(Color())
 	texture.create_from_image(img, 0)
-	NN.correct_digit = -99 # reset correct digit as well
+	NN.correct_digit = null # reset correct digit as well
 
 
 ###

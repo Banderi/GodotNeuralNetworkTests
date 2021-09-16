@@ -326,4 +326,4 @@ __meta__ = {
 [connection signal="pressed" from="shouldbe/HBoxContainer/btn_9" to="." method="_on_btn_shouldbe_pressed" binds= [ 9 ]]
 [connection signal="pressed" from="shouldbe/HBoxContainer/btn_0" to="." method="_on_btn_shouldbe_pressed" binds= [ 0 ]]
 [connection signal="pressed" from="shouldbe/btn_none" to="." method="_on_btn_shouldbe_pressed" binds= [ -2 ]]
-[connection signal="pressed" from="shouldbe/btn_clear" to="." method="_on_btn_shouldbe_pressed" binds= [ -99 ]]
+[connection signal="pressed" from="shouldbe/btn_clear" to="." method="_on_btn_shouldbe_clear"]

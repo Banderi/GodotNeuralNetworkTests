@@ -239,16 +239,22 @@ godot_variant load_neuron_values(godot_object *p_instance, void *p_method_data, 
         const godot_array layer = to_array(API->godot_array_get(&data, i));
         int neurons_this_layer = API->godot_array_size(&layer); // layer size (num. of neurons in it)
 
-        // calculate number of weights (neurons in the next layer)
+        // calculate number of weights (neurons in the next layer & prev layer)
         int neurons_next_layer = 0;
         if (i + 1 < layers_count) {
             const godot_array next_layer = to_array(API->godot_array_get(&data, i + 1));
             neurons_next_layer = API->godot_array_size(&next_layer); // layer size (num. of neurons in it)
             free(next_layer);
         }
+        int neurons_prev_layer = 0;
+        if (i > 0) {
+            const godot_array prev_layer = to_array(API->godot_array_get(&data, i - 1));
+            neurons_prev_layer = API->godot_array_size(&prev_layer); // layer size (num. of neurons in it)
+            free(prev_layer);
+        }
 
         // allocate layer memory if necessary
-        NN.allocate_memory(i, neurons_this_layer, neurons_next_layer);
+        NN.allocate_memory(i, neurons_this_layer, neurons_next_layer, neurons_prev_layer);
 
         // for each neuron in the layer...
         for (int j = 0; j < neurons_this_layer; ++j) {
@@ -264,7 +270,7 @@ godot_variant load_neuron_values(godot_object *p_instance, void *p_method_data, 
                 const godot_variant bias = API->godot_array_get(&neuron, 1);
                 NN.set_bias(i, j, API->godot_variant_as_real(&bias));
             }
-            if (neuron_arr_size_safety_check > 2) {
+            if (neuron_arr_size_safety_check > 2 && !NN.allocated) {
                 const godot_array weights = to_array(API->godot_array_get(&neuron, 2));
                 int weights_per_neuron_this_layer = API->godot_array_size(&weights);
 
@@ -293,17 +299,37 @@ godot_variant load_neuron_values(godot_object *p_instance, void *p_method_data, 
 //    return debug_line_text("neurons_done:", NN.neuron_total_count);
 }
 godot_variant fetch_single_neuron(godot_object *p_instance, void *p_method_data, void *p_globals, int p_num_args, godot_variant **p_args) {
-
-//    godot_variant l_var = get_param(0, p_args, p_num_args);
-//    godot_variant n = get_param(1, p_args, p_num_args);
-
     int l = to_int(get_param(0, p_args, p_num_args));
     int n = to_int(get_param(1, p_args, p_num_args));
 
     auto neuron = NN.get_neuron(l, n);
-    double activation = neuron->activation;
 
-    return to_variant(activation);
+    auto arr_n = empty_array();
+    array_push_back(&arr_n, to_variant(neuron->activation));
+    array_push_back(&arr_n, to_variant(neuron->bias));
+
+    return to_variant_unsafe(arr_n);
+}
+godot_variant fetch_neuron_synapse_weights(godot_object *p_instance, void *p_method_data, void *p_globals, int p_num_args, godot_variant **p_args) {
+    int l = to_int(get_param(0, p_args, p_num_args));
+    int n = to_int(get_param(1, p_args, p_num_args));
+
+    auto neuron = NN.get_neuron(l, n);
+
+    auto arr_s = empty_array();
+    for (int s = 0; s < neuron->synapses_total_count; ++s)
+        array_push_back(&arr_s, to_variant(neuron->synapses[s].weight));
+
+    return to_variant_unsafe(arr_s);
+}
+godot_variant fetch_neuron_synapse_single(godot_object *p_instance, void *p_method_data, void *p_globals, int p_num_args, godot_variant **p_args) {
+    int l = to_int(get_param(0, p_args, p_num_args));
+    int n = to_int(get_param(1, p_args, p_num_args));
+    int s = to_int(get_param(2, p_args, p_num_args));
+
+    auto neuron = NN.get_neuron(l, n);
+
+    return to_variant(neuron->synapses[s].weight);
 }
 
 godot_variant update(godot_object *p_instance, void *p_method_data, void *p_globals, int p_num_args, godot_variant **p_args) {
@@ -322,7 +348,6 @@ godot_variant update_backpropagation(godot_object *p_instance, void *p_method_da
     bool success = NN.update_backpropagation();
     return to_variant(success);
 }
-
 godot_variant get_answer_digit(godot_object *p_instance, void *p_method_data, void *p_globals, int p_num_args, godot_variant **p_args) {
     int answer = NN.get_answer_digit();
     double cost = NN.get_result_cost();
@@ -343,6 +368,8 @@ void init_nativescript_methods() {
     //
     register_method("load_neuron_values", &load_neuron_values);
     register_method("fetch_single_neuron", &fetch_single_neuron);
+    register_method("fetch_neuron_synapse_weights", &fetch_neuron_synapse_weights);
+    register_method("fetch_neuron_synapse_single", &fetch_neuron_synapse_single);
     register_method("update", &update);
     register_method("update_backpropagation", &update_backpropagation);
     //

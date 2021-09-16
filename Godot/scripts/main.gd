@@ -66,7 +66,7 @@ func update_cost_and_answer_texts():
 	answer.text = str(NN.get_network_answer_digit())
 	# update "should be" text
 	var correct_digit = NN.correct_digit
-	if correct_digit == -99:
+	if correct_digit == null:
 		shouldbe.text = "Should be: --"
 	elif correct_digit < 0:
 		shouldbe.text = "Should be: none"
@@ -75,7 +75,7 @@ func update_cost_and_answer_texts():
 	# update cost text
 	var answer_cost = stepify(NN.network_answer_cost, 0.001)
 	cost.modulate = Color(1,0,0).linear_interpolate(Color(0,1,0), NN.is_cost_acceptable())
-	if correct_digit < -2:
+	if correct_digit == null:
 		answer_cost = ""
 	elif answer_cost > 100:
 		answer_cost = str(">100(!!)")
@@ -101,10 +101,10 @@ func _process(delta):
 	Profiler.clock_out("update_gdnative")
 
 	# save data to drive!!
-	if time > 0.2:
-		Profiler.clock_in("cache_serialization")
-		Files.savefile(NN.get_database_path(), NN.data)
-		Profiler.clock_out("cache_serialization")
+#	if time > 0.2:
+#		Profiler.clock_in("cache_serialization")
+#		Files.savefile(NN.get_database_path(), NN.data)
+#		Profiler.clock_out("cache_serialization")
 
 	# draw
 	Profiler.clock_in("draw")
@@ -132,4 +132,6 @@ func _ready():
 
 func _on_btn_shouldbe_pressed(digit):
 	NN.correct_digit = digit
-#	update_cost_and_answer_texts()
+
+func _on_btn_shouldbe_clear():
+	NN.correct_digit = null
