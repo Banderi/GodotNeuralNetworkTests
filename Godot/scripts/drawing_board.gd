@@ -47,11 +47,15 @@ func fetch_values():
 ###
 
 func _process(delta):
+	Profiler.clock_in("draw_board")
+
 	# click
 	if Input.is_action_pressed("mouse_left"):
 		draw(get_local_mouse_position())
 	else:
 		last_pos = null
+
+	Profiler.clock_out("draw_board")
 
 func _on_drawingBoard_mouse_entered():
 	mouse_is_inside = true

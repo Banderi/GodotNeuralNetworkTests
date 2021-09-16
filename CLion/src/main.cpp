@@ -226,17 +226,17 @@ godot_variant get_heartbeat(godot_object *p_instance, void *p_method_data, void 
     return to_variant_unsafe(arr);
 }
 
-godot_variant setup_network(godot_object *p_instance, void *p_method_data, void *p_globals, int p_num_args, godot_variant **p_args) {
-
-    auto arr = constr_godot_array(p_args, p_num_args);
-
-
-
-    // TODO!!!!
-
-
-    return to_variant(true);
-}
+//godot_variant setup_network(godot_object *p_instance, void *p_method_data, void *p_globals, int p_num_args, godot_variant **p_args) {
+//
+//    auto arr = constr_godot_array(p_args, p_num_args);
+//
+//
+//
+//    // TODO!!!!
+//
+//
+//    return to_variant(true);
+//}
 godot_variant load_neuron_values(godot_object *p_instance, void *p_method_data, void *p_globals, int p_num_args, godot_variant **p_args) {
     godot_array data = to_array(get_param(0, p_args, p_num_args));
 
@@ -303,153 +303,6 @@ godot_variant load_neuron_values(godot_object *p_instance, void *p_method_data, 
     return empty_variant();
 //    return debug_line_text("neurons_done:", NN.neuron_total_count);
 }
-godot_variant retrieve_neuron_values(godot_object *p_instance, void *p_method_data, void *p_globals, int p_num_args, godot_variant **p_args) {
-
-    // this WORKS
-//    godot_pool_real_array reals; // OK
-//    API->godot_pool_real_array_new(&reals); // OK
-//
-//    API->godot_pool_real_array_append(&reals, 235234); // OK
-//
-//    godot_variant ret; // OK
-//    API->godot_variant_new_pool_real_array(&ret, &reals); // OK
-//    return ret; // OK
-
-
-    ////////
-
-    godot_variant data_var; // OK
-    API->godot_variant_new_real(&data_var, 235235); // OK
-
-    godot_pool_byte_array bytes; // OK
-    API->godot_pool_byte_array_new(&bytes); // OK
-
-    godot_array test_arr; // OK
-    API->godot_array_new(&test_arr); // OK
-
-    API->godot_array_push_back(&test_arr, &data_var); // OK
-    API->godot_array_push_back(&test_arr, &data_var); // OK
-    API->godot_array_push_back(&test_arr, &data_var); // OK
-    API->godot_array_push_back(&test_arr, &data_var); // OK
-    API->godot_array_push_back(&test_arr, &data_var); // OK
-    API->godot_array_push_back(&test_arr, &data_var); // OK
-
-//    return to_variant_unsafe(test_arr); // OK --- the array works...
-
-    godot_pool_real_array reals; // OK
-    API->godot_pool_real_array_new_with_array(&reals, &test_arr);
-
-
-//    API->godot_pool_real_array_append(&bytes, 235234); // OK
-//    API->godot_pool_byte_array_new_with_array(&bytes, &test_arr);
-//    bytes = API->godot_variant_as_pool_byte_array(&data_var);
-
-    godot_variant ret; // OK
-    API->godot_variant_new_pool_real_array(&ret, &reals); // OK
-//    API->godot_variant_new_pool_byte_array(&ret, &bytes);
-    return ret; // OK
-
-    ////////
-
-
-
-    godot_pool_byte_array pool;
-    API->godot_pool_byte_array_new(&pool);
-
-
-    pool = API->godot_variant_as_pool_byte_array(&data_var);
-
-
-
-    godot_variant pool_var;
-    API->godot_variant_new_pool_byte_array(&pool_var, &pool);
-//    API->godot_pool_byte_array_destroy(&pool);
-    return pool_var;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // primary object
-    auto data = empty_array();
-
-    // invalid data
-    if (!NN.allocated)
-        return to_variant_unsafe(data);
-
-    // for each layer...
-    for (int i = 0; i < NN.layers_count; ++i) {
-        auto l = &NN.layers[i];
-        unsigned int neurons_this_layer = l->neuron_total_count;
-
-        // layer data array
-        auto layer_arr = empty_array();
-
-        // for each neuron in the layer...
-        for (int j = 0; j < neurons_this_layer; ++j) {
-            neuron_obj *n = &l->neurons[j];
-
-            // neuron data array
-            auto neuron_arr = empty_array();
-
-            // first two fields are activation and bias
-            array_push_back(&neuron_arr, to_variant(n->activation));
-            array_push_back(&neuron_arr, to_variant(n->bias));
-
-            // weights data array
-            auto weights_arr = empty_array();
-
-            // for each synapses' weight in the layer...
-            for (int k = 0; k < n->synapses_total_count; ++k)
-                array_push_back(&weights_arr, to_variant(n->synapses[k].weight));
-
-            // add weight array to neuron object
-            array_push_back(&neuron_arr, to_variant_unsafe(weights_arr));
-
-            // add neuron object to layer array
-            array_push_back(&layer_arr, to_variant_unsafe(neuron_arr));
-        }
-
-        // add layer array to primary data object
-        array_push_back(&data, to_variant_unsafe(layer_arr));
-    }
-
-    // if everything went well....
-
-//    auto data_var = to_variant_unsafe(data, false);
-//    free(data); // redundant?
-//
-//    auto pool = API->godot_variant_as_pool_byte_array(&data_var);
-//    free(data_var); // redundant?
-//
-//    godot_variant pool_var;
-//    API->godot_variant_new_pool_byte_array(&pool_var, &pool);
-//    API->godot_pool_byte_array_destroy(&pool);
-//    free(data);
-//    return pool_var;
-
-
-
-
-
-
-
-
-
-//    return to_variant_unsafe(data);
-}
-
 godot_variant fetch_single_neuron(godot_object *p_instance, void *p_method_data, void *p_globals, int p_num_args, godot_variant **p_args) {
 
 //    godot_variant l_var = get_param(0, p_args, p_num_args);
@@ -468,6 +321,17 @@ godot_variant update(godot_object *p_instance, void *p_method_data, void *p_glob
     bool success = NN.update_network();
     return to_variant(success);
 }
+godot_variant update_backpropagation(godot_object *p_instance, void *p_method_data, void *p_globals, int p_num_args, godot_variant **p_args) {
+    auto favorable_results = to_array(get_param(0, p_args, p_num_args)); // <---- this is an ARRAY containing favorable values for the final layer
+
+
+    for (int i = 0; i < API->godot_array_size(&favorable_results); ++i) {
+
+    }
+
+    bool success = NN.update_backpropagation();
+    return to_variant(success);
+}
 
 void init_nativescript_methods() {
 
@@ -477,8 +341,9 @@ void init_nativescript_methods() {
     register_method("get_heartbeat", &get_heartbeat);
     //
     register_method("load_neuron_values", &load_neuron_values);
-    register_method("retrieve_neuron_values", &retrieve_neuron_values);
+//    register_method("retrieve_neuron_values", &retrieve_neuron_values);
     register_method("fetch_single_neuron", &fetch_single_neuron);
-    register_method("setup_network", &setup_network);
+//    register_method("setup_network", &setup_network);
     register_method("update", &update);
+    register_method("update_backpropagation", &update_backpropagation);
 }

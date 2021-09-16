@@ -9,12 +9,14 @@ typedef struct neuron_obj {
     double potential = 0.0;
     double activation = 0.0;
     double bias = 0.0;
+    double bias_COMPUTED_COST_SCORE = 0.0;
     synapse_obj *synapses = nullptr; // array
     unsigned long long synapses_total_count = 0;
 } neuron_obj;
 
 typedef struct synapse_obj {
     double weight = 0.0;
+    double weight_COMPUTED_COST_SCORE = 0.0;
     neuron_obj *termination{};
 } synapse_obj;
 
@@ -41,6 +43,7 @@ public:
     void set_weight(int layer, int index, int w_index, double weight);
 
     bool update_network(); // here the magic happens!!!!!!!
+    bool update_backpropagation();
 };
 
 #ifdef __cplusplus

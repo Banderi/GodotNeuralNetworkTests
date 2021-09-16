@@ -132,3 +132,9 @@ bool neural_network::update_network() {
     }
     return true;
 }
+bool neural_network::update_backpropagation() {
+
+    // TODO!!!!!!!!!
+
+    return true;
+}

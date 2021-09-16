@@ -2,6 +2,8 @@ extends Node
 
 onready var NeuralNetwork = load("res://bin/test.gdns").new()
 
+var curr_database = "digits"
+
 var data = []
 var config = [
 	{
@@ -68,6 +70,37 @@ func test_identity(a, b, values = false):
 
 ###
 
+# ====== THE PLAN SO FAR: =======
+# - ???
+# - compute the EXPECTED RESULTS on the local (gdscript) end with below function
+# - pass EXPECTED RESULTS array to GDNative library
+# - calculate COST on the GDNative library end
+# - calculate backpropagation on the GDNative library end
+
+#func cost(correct, bogus):
+#	var sum = 0
+#	for n in correct.size():
+#		var diff = bogus[n][0] - correct[n][0]
+#		sum += diff * diff
+#	return sum
+
+func get_favorable_final_layer():
+	# TODO!
+	return [0,0,0,0,0,0,0,0,0,0]
+
+func update_backpropagation():
+
+	# get cost for current state
+	var favorable = get_favorable_final_layer()
+#	var bogus = data[data.size() - 1]
+#	var cc = cost(correct, bogus)
+
+	# black magic!!!
+	NeuralNetwork.update_backpropagation(favorable)
+
+
+###
+
 func randomize_neuron_inputs():
 	for n in data[0]:
 		n[0] = rand_range(0.0, 1.0)
@@ -94,20 +127,15 @@ var time = 0.0
 func update_local_randomizations(delta):
 	time += delta
 
-	# randomize weights
+	# randomize weights & biases
 	if time > 1.0:
 		time = 0.0
 		Profiler.clock_in("rand_weights_local")
 		randomize_neuron_weights(0, false)
-		randomize_neuron_weights(1, true, -4000, -500)
-		randomize_neuron_weights(2, true, -2000, -500)
-		randomize_neuron_weights(3, true, -2000, -500)
+		randomize_neuron_weights(1, true, -200, -150)
+		randomize_neuron_weights(2, true, -20, -5)
+		randomize_neuron_weights(3, true, -20, -5)
 		Profiler.clock_out("rand_weights_local")
-
-	# randomize inputs
-#	Profiler.clock_in("rand_activ_local")
-#	randomize_neuron_inputs()
-#	Profiler.clock_out("rand_activ_local")
 func update_local_input(board):
 
 	# update inputs from drawing board
@@ -140,30 +168,84 @@ func update_nn():
 		pass
 	Profiler.clock_out("update_nn")
 
-
 	# hopefully.....
 	Profiler.clock_in("fetchset_one_by_one")
 	fetchset_full_database()
 	Profiler.clock_out("fetchset_one_by_one")
 
+	# save data to drive!!
+	Profiler.clock_in("cache_serialization")
+	savetofile(get_database_path(), data)
+	Profiler.clock_out("cache_serialization")
+
+###
+
+func savetofile(path, data):
+	var file = File.new()
+	file.open(path, File.WRITE)
+	file.store_var(data)
+	file.close()
+func loadfromfile(path):
+	var file = File.new()
+	if not file.file_exists(path):
+		return null
+	file.open(path, File.READ)
+	var data = file.get_var()
+	file.close()
+	return data
+
+#func load_res(): # load resources, textures, descriptions, etc. from disk
+#	var data_file = File.new()
+#	if data_file.open("res://data.json", File.READ) != OK:
+#		get_tree().quit(); # Joseph: "OOOOH NOOOO"
+#	var data_text = data_file.get_as_text()
+#	data_file.close()
+#	var data_parse = JSON.parse(data_text)
+#	var valid = validate_json(data_text)
+#	if valid != "" || data_parse.error != OK:
+#		print("Got JSON file of size " + String(data_text.length()) + ";")
+#		print("JSON parse error on line: " + String(data_parse.error_line) + " : " + String(data_parse.error_string))
+#		get_tree().quit() # Joseph: "OOOOOOHH NOOOOOOOO"
+#
+#	var data = data_parse.result
+#
+#	settings = data["ini"]
+#	items = data["res"]["items"]
+#	characters = data["res"]["characters"]
+#	cuts = data["res"]["cuts"]
+
+func get_database_path():
+	return "res://DATABASES/" + curr_database + ".dat"
+
+func initialize_network_data():
+
+	### check if database case EXIST within the files
+	var database = loadfromfile(get_database_path())
+	if database != null:
+		data = database
+	else: # no database found! start from scratch!
+		data = []
+		# construct data arrays if they aren't yet initialized (or are partial)
+		check_init_data_array_sizes()
+
+		# randomize inputs
+		Profiler.clock_in("rand_activ_local")
+		randomize_neuron_inputs()
+		Profiler.clock_out("rand_activ_local")
+
+		# randomize weights
+		Profiler.clock_in("rand_weights_local")
+		randomize_neuron_weights(0, false)
+		randomize_neuron_weights(1, true, -4000, -500)
+		randomize_neuron_weights(2, true, -2000, -500)
+		randomize_neuron_weights(3, true, -2000, -500)
+		Profiler.clock_out("rand_weights_local")
+
 ###########
 
 func _ready():
-	# construct data arrays if they aren't yet initialized (or are partial)
-	check_init_data_array_sizes()
 
-	# randomize inputs
-	Profiler.clock_in("rand_activ_local")
-	randomize_neuron_inputs()
-	Profiler.clock_out("rand_activ_local")
-
-	# randomize weights
-	Profiler.clock_in("rand_weights_local")
-	randomize_neuron_weights(0, false)
-	randomize_neuron_weights(1, true, -4000, -500)
-	randomize_neuron_weights(2, true, -2000, -500)
-	randomize_neuron_weights(3, true, -2000, -500)
-	Profiler.clock_out("rand_weights_local")
+	initialize_network_data()
 
 	# upload data to GDNative...
 	NeuralNetwork.load_neuron_values(data)

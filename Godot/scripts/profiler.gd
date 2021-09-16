@@ -48,7 +48,14 @@ func clock_flush(id):
 
 	# SELF PROFILING...
 	profiling["profiling"] += OS.get_ticks_usec() - t
-func time(id, corr = 0.001, average = true, unit = ""):
+func time(id, corr = 0.001, average = false):
+	if !profiling.has(id) || profiling[id] == null:
+		return null
+	if average:
+		return profiling_temp[id][4] * corr
+	else:
+		return profiling[id] * corr
+func time_formatted(id, corr = 0.001, average = false, unit = ""):
 	if !profiling.has(id) || profiling[id] == null:
 		return "--"
 	if average:
