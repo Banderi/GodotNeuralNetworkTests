@@ -155,8 +155,20 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="btn_1" type="Button" parent="shouldbe/HBoxContainer"]
+[node name="btn_0" type="Button" parent="shouldbe/HBoxContainer"]
 margin_right = 30.0
+margin_bottom = 40.0
+rect_min_size = Vector2( 30, 0 )
+custom_fonts/font = SubResource( 3 )
+text = "0"
+__meta__ = {
+"_edit_lock_": true,
+"_edit_use_anchors_": false
+}
+
+[node name="btn_1" type="Button" parent="shouldbe/HBoxContainer"]
+margin_left = 32.0
+margin_right = 62.0
 margin_bottom = 40.0
 rect_min_size = Vector2( 30, 0 )
 custom_fonts/font = SubResource( 3 )
@@ -167,8 +179,8 @@ __meta__ = {
 }
 
 [node name="btn_2" type="Button" parent="shouldbe/HBoxContainer"]
-margin_left = 32.0
-margin_right = 62.0
+margin_left = 64.0
+margin_right = 94.0
 margin_bottom = 40.0
 rect_min_size = Vector2( 30, 0 )
 custom_fonts/font = SubResource( 3 )
@@ -179,8 +191,8 @@ __meta__ = {
 }
 
 [node name="btn_3" type="Button" parent="shouldbe/HBoxContainer"]
-margin_left = 64.0
-margin_right = 94.0
+margin_left = 96.0
+margin_right = 126.0
 margin_bottom = 40.0
 rect_min_size = Vector2( 30, 0 )
 custom_fonts/font = SubResource( 3 )
@@ -191,8 +203,8 @@ __meta__ = {
 }
 
 [node name="btn_4" type="Button" parent="shouldbe/HBoxContainer"]
-margin_left = 96.0
-margin_right = 126.0
+margin_left = 128.0
+margin_right = 158.0
 margin_bottom = 40.0
 rect_min_size = Vector2( 30, 0 )
 custom_fonts/font = SubResource( 3 )
@@ -203,8 +215,8 @@ __meta__ = {
 }
 
 [node name="btn_5" type="Button" parent="shouldbe/HBoxContainer"]
-margin_left = 128.0
-margin_right = 158.0
+margin_left = 160.0
+margin_right = 190.0
 margin_bottom = 40.0
 rect_min_size = Vector2( 30, 0 )
 custom_fonts/font = SubResource( 3 )
@@ -215,8 +227,8 @@ __meta__ = {
 }
 
 [node name="btn_6" type="Button" parent="shouldbe/HBoxContainer"]
-margin_left = 160.0
-margin_right = 190.0
+margin_left = 192.0
+margin_right = 222.0
 margin_bottom = 40.0
 rect_min_size = Vector2( 30, 0 )
 custom_fonts/font = SubResource( 3 )
@@ -227,8 +239,8 @@ __meta__ = {
 }
 
 [node name="btn_7" type="Button" parent="shouldbe/HBoxContainer"]
-margin_left = 192.0
-margin_right = 222.0
+margin_left = 224.0
+margin_right = 254.0
 margin_bottom = 40.0
 rect_min_size = Vector2( 30, 0 )
 custom_fonts/font = SubResource( 3 )
@@ -239,8 +251,8 @@ __meta__ = {
 }
 
 [node name="btn_8" type="Button" parent="shouldbe/HBoxContainer"]
-margin_left = 224.0
-margin_right = 254.0
+margin_left = 256.0
+margin_right = 286.0
 margin_bottom = 40.0
 rect_min_size = Vector2( 30, 0 )
 custom_fonts/font = SubResource( 3 )
@@ -251,24 +263,12 @@ __meta__ = {
 }
 
 [node name="btn_9" type="Button" parent="shouldbe/HBoxContainer"]
-margin_left = 256.0
-margin_right = 286.0
-margin_bottom = 40.0
-rect_min_size = Vector2( 30, 0 )
-custom_fonts/font = SubResource( 3 )
-text = "9"
-__meta__ = {
-"_edit_lock_": true,
-"_edit_use_anchors_": false
-}
-
-[node name="btn_0" type="Button" parent="shouldbe/HBoxContainer"]
 margin_left = 288.0
 margin_right = 318.0
 margin_bottom = 40.0
 rect_min_size = Vector2( 30, 0 )
 custom_fonts/font = SubResource( 3 )
-text = "0"
+text = "9"
 __meta__ = {
 "_edit_lock_": true,
 "_edit_use_anchors_": false
@@ -315,6 +315,7 @@ __meta__ = {
 [connection signal="mouse_entered" from="drawingBoard" to="drawingBoard" method="_on_drawingBoard_mouse_entered"]
 [connection signal="mouse_exited" from="drawingBoard" to="drawingBoard" method="_on_drawingBoard_mouse_exited"]
 [connection signal="pressed" from="btn_clear" to="drawingBoard" method="_on_btn_clear_pressed"]
+[connection signal="pressed" from="shouldbe/HBoxContainer/btn_0" to="." method="_on_btn_shouldbe_pressed" binds= [ 0 ]]
 [connection signal="pressed" from="shouldbe/HBoxContainer/btn_1" to="." method="_on_btn_shouldbe_pressed" binds= [ 1 ]]
 [connection signal="pressed" from="shouldbe/HBoxContainer/btn_2" to="." method="_on_btn_shouldbe_pressed" binds= [ 2 ]]
 [connection signal="pressed" from="shouldbe/HBoxContainer/btn_3" to="." method="_on_btn_shouldbe_pressed" binds= [ 3 ]]
@@ -324,6 +325,5 @@ __meta__ = {
 [connection signal="pressed" from="shouldbe/HBoxContainer/btn_7" to="." method="_on_btn_shouldbe_pressed" binds= [ 7 ]]
 [connection signal="pressed" from="shouldbe/HBoxContainer/btn_8" to="." method="_on_btn_shouldbe_pressed" binds= [ 8 ]]
 [connection signal="pressed" from="shouldbe/HBoxContainer/btn_9" to="." method="_on_btn_shouldbe_pressed" binds= [ 9 ]]
-[connection signal="pressed" from="shouldbe/HBoxContainer/btn_0" to="." method="_on_btn_shouldbe_pressed" binds= [ 0 ]]
 [connection signal="pressed" from="shouldbe/btn_none" to="." method="_on_btn_shouldbe_pressed" binds= [ -2 ]]
 [connection signal="pressed" from="shouldbe/btn_clear" to="." method="_on_btn_shouldbe_clear"]

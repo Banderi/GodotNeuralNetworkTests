@@ -15,7 +15,7 @@ typedef struct neuron_obj {
     unsigned long long parent_dendrites_total_count = 0;
     //
     double activation_GOAL_FAVORABLE = 0.0;
-    double bias_COMPUTED_COST_SCORE = 0.0;
+    int activation_GOAL_FAVORABLE_COUNTS = 0;
 } neuron_obj;
 
 typedef struct synapse_obj {

@@ -173,18 +173,19 @@ bool neural_network::update_backpropagation() {
             auto neuron = &layer.neurons[n];
 
             unsigned long long total_dendrites = neuron->parent_dendrites_total_count;
-            double score_gradient = neuron->activation_GOAL_FAVORABLE - neuron->activation; // this is ultimately the goal of the child neuron. how much should the total be changed by??
-            double score_gradient_per_synapse = score_gradient / (double)total_dendrites; // this is the score goal, but scaled by the number of parent neurons.
+            double activ_goal_gradient = (neuron->activation_GOAL_FAVORABLE / (double)neuron->activation_GOAL_FAVORABLE_COUNTS) - neuron->activation; // this is ultimately the goal of the child neuron. how much should the total be changed by??
+            double activ_goal_gradient_per_synapse = activ_goal_gradient / (double)total_dendrites; // this is the score goal, but scaled by the number of parent neurons.
 
 
 
             // child's BIAS
-            neuron->bias = score_gradient * BIAS_coeff - (double)total_dendrites;
-//            neuron->bias += score_gradient * BIAS_coeff;
-            if (neuron->bias > 100.0) // clamp BIAS
-                neuron->bias = 100.0;
-            if (neuron->bias < -100.0)
-                neuron->bias = -100.0;
+            neuron->bias = 0;
+//            neuron->bias = score_gradient * BIAS_coeff - (double)total_dendrites;
+////            neuron->bias += score_gradient * BIAS_coeff;
+//            if (neuron->bias > 100.0) // clamp BIAS
+//                neuron->bias = 100.0;
+//            if (neuron->bias < -100.0)
+//                neuron->bias = -100.0;
 
 
             // for each synapse (backwards)
@@ -218,15 +219,18 @@ bool neural_network::update_backpropagation() {
                 // TODO: MAGIC!
 
                 // synapse's WEIGHT
-                synapse->weight += score_gradient_per_synapse * (parent->activation + 0.0);// * WEIGHT_coeff;
+//                synapse->weight = 0.0;
+                synapse->weight += activ_goal_gradient_per_synapse * parent->activation;// * WEIGHT_coeff;
                 if (synapse->weight > 1.0) // clamp WEIGHT
                     synapse->weight = 1.0;
                 if (synapse->weight < -1.0)
                     synapse->weight = -1.0;
 
                 // parent's ACTIVATION
-                parent->activation_GOAL_FAVORABLE = parent->activation; // default
-                parent->activation_GOAL_FAVORABLE = parent->activation + score_gradient_per_synapse;// * ACTIVATION_coeff;
+//                parent->activation_GOAL_FAVORABLE = parent->activation; // default
+                double parent_new_goal = parent->activation + activ_goal_gradient * synapse->weight;
+                parent->activation_GOAL_FAVORABLE += parent_new_goal;// * ACTIVATION_coeff;
+                parent->activation_GOAL_FAVORABLE_COUNTS++;
             }
         }
     }

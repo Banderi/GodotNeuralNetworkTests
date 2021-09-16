@@ -42,6 +42,7 @@ func draw_text():
 		text_prof_line("store_values", "> ")
 		text_prof_line("update_nn", "> ")
 		text_prof_line("fetchset_one_by_one", "> ")
+		text_prof_line("fetchset_synapses", "> ")
 		text_prof_line("cache_serialization", "> ")
 
 		text_line("")
@@ -97,8 +98,23 @@ func _process(delta):
 
 	# gdnative library updates
 	Profiler.clock_in("update_gdnative")
+	# neuron updates
+	Profiler.clock_in("update_nn")
 	NN.update_nn()
+	Profiler.clock_out("update_nn")
+
+	# fetch neuron states
+	Profiler.clock_in("fetchset_one_by_one")
+	NN.fetchset_full_database()
+	Profiler.clock_out("fetchset_one_by_one")
+
+	# fetch synapses states
+	if time > 0.2:
+		Profiler.clock_in("fetchset_synapses")
+		NN.fetchset_synapse_weights()
+		Profiler.clock_out("fetchset_synapses")
 	Profiler.clock_out("update_gdnative")
+
 
 	# save data to drive!!
 #	if time > 0.2:

@@ -307,6 +307,7 @@ godot_variant fetch_single_neuron(godot_object *p_instance, void *p_method_data,
     auto arr_n = empty_array();
     array_push_back(&arr_n, to_variant(neuron->activation));
     array_push_back(&arr_n, to_variant(neuron->bias));
+    array_push_back(&arr_n, to_variant(neuron->activation_GOAL_FAVORABLE));
 
     return to_variant_unsafe(arr_n);
 }
@@ -343,6 +344,7 @@ godot_variant update_backpropagation(godot_object *p_instance, void *p_method_da
     for (int i = 0; i < API->godot_array_size(&favorable_results); ++i) {
         double value = to_double(API->godot_array_get(&favorable_results, i));
         NN.outputs()->neurons[i].activation_GOAL_FAVORABLE = value;
+        NN.outputs()->neurons[i].activation_GOAL_FAVORABLE_COUNTS = 1;
     }
 
     bool success = NN.update_backpropagation();

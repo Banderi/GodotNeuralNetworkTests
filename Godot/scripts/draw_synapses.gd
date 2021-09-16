@@ -21,7 +21,16 @@ func draw_synapse(pos, l, n, w, total_synapses):
 	var pos2 = get_pos(l + 1, w, total_synapses)
 	var activation = NN.data[l][n][0]
 	var weight = NN.data[l][n][2][w]
-	draw_line(pos + Vector2(3, 3), pos2 + Vector2(3, 3), Color(0,0,0,1).linear_interpolate(Color(1,0,0,1), activation * weight))
+
+	var col = Color(0.5, 0.5, 0, 1)
+	if weight < 0:
+		col = col.linear_interpolate(Color(0,0,1,1), 1 - weight)
+	if weight > 0:
+		col = col.linear_interpolate(Color(1,0,0,1), weight)
+	col *= min(1.0, max(0.5, activation))
+	col.a = 1.0
+
+	draw_line(pos + Vector2(3, 3), pos2 + Vector2(3, 3), col)
 
 func _draw():
 	# draw synapses

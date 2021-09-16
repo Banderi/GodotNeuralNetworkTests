@@ -69,7 +69,7 @@ func check_init_data_array_sizes():
 
 		# secondly, add neurons as needed if any is missing
 		while layer.size() < layer_info["size"]:
-			layer.push_back([0.0, 0.0, []])
+			layer.push_back([0.0, 0.0, [], 0.0])
 func initialize_network_data():
 
 	### check if database case EXIST within the files
@@ -187,37 +187,39 @@ func update_local_input(board):
 	last_hash = curr_hash
 	Profiler.clock_out("store_values")
 
+func fetchset_neuron_synapses(l, n):
+	# this is INSANELY SLOW. NOT VIABLE
+#	for s in data[l][n][2].size():
+#		var weight = NeuralNetwork.fetch_neuron_synapse_single(l, n, s)
+#		data[l][n][2][s] = weight # synapses!!
+
+	# this one is SLOW, but better...
+	var syn = NeuralNetwork.fetch_neuron_synapse_weights(l, n) # this is inSANELY SLOWW
+	data[l][n][2] = syn # synapses!!
+
 func fetchset_neuron_state(l, n):
 	var res = NeuralNetwork.fetch_single_neuron(l, n)
 	data[l][n][0] = res[0] # activation
 	data[l][n][1] = res[1] # bias
+	if correct_digit != null:
+		data[l][n][3] = res[2] # goal
+	else:
+		data[l][n][3] = 0.0
 
-#	for s in data[l][n][2].size():
-#		var weight = NeuralNetwork.fetch_neuron_synapse_single(l, n, s) # this is inSANELY SLOWW
-#		data[l][n][2][s] = weight # synapses!!
-
-#	var syn = NeuralNetwork.fetch_neuron_synapse_weights(l, n) # this is inSANELY SLOWW
-#	data[l][n][2] = syn # synapses!!
-
-func fetchset_layer_values(l):
-	for n in data[l].size():
-		fetchset_neuron_state(l, n)
 func fetchset_full_database():
 	for l in data.size():
-		fetchset_layer_values(l)
+		for n in data[l].size():
+			fetchset_neuron_state(l, n)
+func fetchset_synapse_weights():
+	for l in data.size():
+		for n in data[l].size():
+			fetchset_neuron_synapses(l, n)
 
 func update_nn():
 	# update GDNative library!
-	Profiler.clock_in("update_nn")
 	var success = NeuralNetwork.update();
 	if success:
 		pass
-	Profiler.clock_out("update_nn")
-
-	# hopefully.....
-	Profiler.clock_in("fetchset_one_by_one")
-	fetchset_full_database()
-	Profiler.clock_out("fetchset_one_by_one")
 
 ###########
 
