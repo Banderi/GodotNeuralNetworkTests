@@ -215,7 +215,11 @@ func update_nn():
 
 	# save data to drive!!
 	Profiler.clock_in("cache_serialization")
-	savetofile(get_database_path(), data)
+	# first, purge the first neurons' activation. no need to save those!
+	var clean_data = data.duplicate()
+	for n in clean_data[0].size():
+		clean_data[0][n][0] = 0.0
+	savetofile(get_database_path(), clean_data)
 	Profiler.clock_out("cache_serialization")
 
 ###########
