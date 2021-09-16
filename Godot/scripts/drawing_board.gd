@@ -40,7 +40,7 @@ func fetch_values():
 		for x in 64:
 			for y in 64:
 				var col = img.get_pixel(x, y)
-				inputs.push_back(col.gray())
+				inputs.push_back(col.v)
 	img.unlock()
 	return inputs
 

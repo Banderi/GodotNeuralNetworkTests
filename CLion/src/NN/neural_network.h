@@ -9,9 +9,11 @@ typedef struct neuron_obj {
     double potential = 0.0;
     double activation = 0.0;
     double bias = 0.0;
-    double bias_COMPUTED_COST_SCORE = 0.0;
-    synapse_obj *synapses = nullptr; // array
+    synapse_obj *synapses = nullptr; // <---- ARRAY
     unsigned long long synapses_total_count = 0;
+    //
+    double activation_GOAL_FAVORABLE = 0.0;
+    double bias_COMPUTED_COST_SCORE = 0.0;
 } neuron_obj;
 
 typedef struct synapse_obj {
@@ -23,13 +25,13 @@ typedef struct synapse_obj {
 typedef struct layer_obj {
     bool allocated = false;
     unsigned int neuron_total_count = 0;
-    neuron_obj *neurons = nullptr; // array
+    neuron_obj *neurons = nullptr; // <---- ARRAY
 } layer_obj;
 
 class neural_network {
 public:
     bool allocated = false;
-    layer_obj layers[20]; // <-- an array of arrays of neurons -- each layer can contain many neurons.
+    layer_obj layers[20]; // <---- an ARRAY of ARRAYS of neurons -- each layer can contain many neurons.
 
     int layers_count = 0;
     unsigned long long neuron_total_count = 0;
@@ -42,8 +44,13 @@ public:
     void set_bias(int layer, int index, double b);
     void set_weight(int layer, int index, int w_index, double weight);
 
+    layer_obj *inputs();
+    layer_obj *outputs();
+
     bool update_network(); // here the magic happens!!!!!!!
     bool update_backpropagation();
+
+    int get_answer_digit();
 };
 
 #ifdef __cplusplus

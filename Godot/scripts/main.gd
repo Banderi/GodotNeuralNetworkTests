@@ -5,6 +5,7 @@ onready var backdraw = $draw/back
 onready var backdraw2 = $draw/back2
 onready var label = $draw/Label
 onready var drawingBoard = $drawingBoard
+onready var answer = $ans/digit
 
 func text_line(txt):
 	label.text += txt + "\n"
@@ -23,17 +24,13 @@ func draw_text():
 		text_prof_line("frame_delta", "", 1.0, false, "")
 
 		var frame_total = Profiler.time("frame_delta", 1000.0)
-#		var frame_profiled = Profiler.time("update_local") + Profiler.time("update_gdnative") + Profiler.time("draw")
-#		var frame_unaccounted_for = frame_total - frame_profiled
 		text_line("frame_total: " + str(frame_total) + " ms")
-#		text_line("frame_profiled: " + str(frame_profiled) + " ms")
-#		text_line("frame_unaccounted_for: " + str(frame_unaccounted_for) + " ms")
 
 		text_line("")
 
 		text_prof_line("update_local")
 		text_prof_line("input_activ_update", "> ")
-		text_prof_line("rand_weights_local", "> ")
+		text_prof_line("input_backprop", "> ")
 
 		text_line("")
 
@@ -57,6 +54,9 @@ func draw_text():
 		text_line(str(drawingBoard.mouse_is_inside))
 		text_line(str(drawingBoard.get_local_mouse_position()))
 
+		# I guess I can do this in here?
+		answer.text = str(NN.get_network_answer_digit())
+
 ###
 
 var time = 0
@@ -67,8 +67,8 @@ func _process(delta):
 
 	# local updates
 	Profiler.clock_in("update_local")
-#	NN.update_local_randomizations(delta)
 	NN.update_local_input(drawingBoard)
+	NN.update_backpropagation(delta)
 	Profiler.clock_out("update_local")
 
 	# gdnative library updates

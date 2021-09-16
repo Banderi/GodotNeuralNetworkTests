@@ -78,6 +78,17 @@ void neural_network::set_weight(int layer, int index, int w_index, double weight
     n->synapses[w_index].weight = weight;
 }
 
+layer_obj *neural_network::inputs() {
+    if (!allocated)
+        return nullptr;
+    return &layers[0];
+}
+layer_obj *neural_network::outputs() {
+    if (!allocated)
+        return nullptr;
+    return &layers[layers_count - 1];
+}
+
 enum {
     NN_DIRECT,
     NN_CACHED_POINTERS,
@@ -137,4 +148,39 @@ bool neural_network::update_backpropagation() {
     // TODO!!!!!!!!!
 
     return true;
+}
+
+int neural_network::get_answer_digit() {
+    struct {
+        int digit = -2;
+        double activation = 0.0;
+    } n_highest, n_second_highest;
+
+    for (int n = 0; n < outputs()->neuron_total_count; ++n) {
+        const neuron_obj *check = &outputs()->neurons[n];
+        if (check->activation > n_highest.activation) {
+            n_second_highest = n_highest;
+            n_highest.activation = check->activation;
+            n_highest.digit = n;
+        }
+    }
+
+    if (n_highest.activation > 0.5) { // threshold for number identification
+        if (n_highest.activation - n_second_highest.activation > 0.2) // threshold for certainty
+            return n_highest.digit; // fairly confident!
+        else
+            return -1; // unsure between multiple numbers.
+    } else
+        return -2; // nothing close to a number identified.
+
+//    var l = data.size() - 1
+//    for n in data[l].size():
+//        var neuron = data[l][n]
+//        if neuron[0] > n_highest[0]:
+//            n_second_highest = n_highest.duplicate()
+//            n_highest = n.duplicate()
+//
+//    if n_highest[0] > 0.5: # threshold for certainty
+//    if n_highest[0] - n_second_highest[0] > 0.2: # unsured between two values
+//    network_answer_digit = -1
 }

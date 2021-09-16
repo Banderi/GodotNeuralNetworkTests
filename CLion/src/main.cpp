@@ -226,17 +226,6 @@ godot_variant get_heartbeat(godot_object *p_instance, void *p_method_data, void 
     return to_variant_unsafe(arr);
 }
 
-//godot_variant setup_network(godot_object *p_instance, void *p_method_data, void *p_globals, int p_num_args, godot_variant **p_args) {
-//
-//    auto arr = constr_godot_array(p_args, p_num_args);
-//
-//
-//
-//    // TODO!!!!
-//
-//
-//    return to_variant(true);
-//}
 godot_variant load_neuron_values(godot_object *p_instance, void *p_method_data, void *p_globals, int p_num_args, godot_variant **p_args) {
     godot_array data = to_array(get_param(0, p_args, p_num_args));
 
@@ -324,13 +313,19 @@ godot_variant update(godot_object *p_instance, void *p_method_data, void *p_glob
 godot_variant update_backpropagation(godot_object *p_instance, void *p_method_data, void *p_globals, int p_num_args, godot_variant **p_args) {
     auto favorable_results = to_array(get_param(0, p_args, p_num_args)); // <---- this is an ARRAY containing favorable values for the final layer
 
-
+    // update activation_GOAL_FAVORABLE values for the last layer (outputs)
     for (int i = 0; i < API->godot_array_size(&favorable_results); ++i) {
-
+        double value = to_double(API->godot_array_get(&favorable_results, i));
+        NN.outputs()->neurons[i].activation_GOAL_FAVORABLE = value;
     }
 
     bool success = NN.update_backpropagation();
     return to_variant(success);
+}
+
+godot_variant get_answer_digit(godot_object *p_instance, void *p_method_data, void *p_globals, int p_num_args, godot_variant **p_args) {
+    int answer = NN.get_answer_digit();
+    return to_variant(answer);
 }
 
 void init_nativescript_methods() {
@@ -341,9 +336,9 @@ void init_nativescript_methods() {
     register_method("get_heartbeat", &get_heartbeat);
     //
     register_method("load_neuron_values", &load_neuron_values);
-//    register_method("retrieve_neuron_values", &retrieve_neuron_values);
     register_method("fetch_single_neuron", &fetch_single_neuron);
-//    register_method("setup_network", &setup_network);
     register_method("update", &update);
     register_method("update_backpropagation", &update_backpropagation);
+    //
+    register_method("get_answer_digit", &get_answer_digit);
 }
