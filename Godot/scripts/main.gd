@@ -6,6 +6,7 @@ onready var backdraw2 = $draw/back2
 onready var label = $draw/Label
 onready var drawingBoard = $drawingBoard
 onready var answer = $ans/digit
+onready var shouldbe = $shouldbe/Label
 
 ###
 
@@ -57,6 +58,10 @@ func draw_text():
 		text_line(str(drawingBoard.get_local_mouse_position()))
 
 		# I guess I can do this in here?
+		var correct_digit = NN.correct_digit
+		if correct_digit == -2:
+			correct_digit = "--"
+		shouldbe.text = "Should be: " + str(correct_digit)
 		answer.text = str(NN.get_network_answer_digit())
 
 ###
@@ -105,3 +110,7 @@ func _process(delta):
 func _ready():
 	backdraw.onlyfirstlayer = true
 	backdraw2.onlyfirstlayer = false
+
+
+func _on_btn_shouldbe_pressed(digit):
+	NN.correct_digit = digit

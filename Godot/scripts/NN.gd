@@ -103,17 +103,18 @@ func initialize_network_data():
 # - calculate COST on the GDNative library end
 # - calculate backpropagation on the GDNative library end
 
-var correct_digit = null
-var network_answer_digit = null
+var correct_digit = -2
+var network_answer_digit = -2
 
 func get_favorable_final_layer():
 	var values = [0,0,0,0,0,0,0,0,0,0] # default - no neurons are lit
-	if correct_digit != null:
+	if correct_digit != -2:
 		values[correct_digit] = 1.0
 	return values
 func get_network_answer_digit():
-	var res = NeuralNetwork.get_answer_digit()
-	if res == -1:
+	network_answer_digit = NeuralNetwork.get_answer_digit()
+	var res = network_answer_digit
+	if network_answer_digit == -1:
 		res = "?"
 	elif res == -2:
 		res = ""
