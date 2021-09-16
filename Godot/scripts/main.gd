@@ -7,6 +7,8 @@ onready var label = $draw/Label
 onready var drawingBoard = $drawingBoard
 onready var answer = $ans/digit
 
+###
+
 func text_line(txt):
 	label.text += txt + "\n"
 func text_prof_line(id, indentation = "", corr = 0.001, average = true, unit = " ms"):
@@ -76,10 +78,15 @@ func _process(delta):
 	NN.update_nn()
 	Profiler.clock_out("update_gdnative")
 
+	# save data to drive!!
+	if time > 0.2:
+		Profiler.clock_in("cache_serialization")
+		Files.savefile(NN.get_database_path(), NN.data)
+		Profiler.clock_out("cache_serialization")
+
 	# draw
 	Profiler.clock_in("draw")
 	if time > 0.2:
-		time = 0.0
 		backdraw.update()
 	backdraw2.update()
 	draw.update()
@@ -88,6 +95,10 @@ func _process(delta):
 	Profiler.clock_out("draw_text")
 	Profiler.clock_out("draw", false)
 	Profiler.clock_flush("draw")
+
+	# reset clock
+	if time > 0.2:
+		time = 0.0
 
 	Profiler.clock_out("frame_process")
 

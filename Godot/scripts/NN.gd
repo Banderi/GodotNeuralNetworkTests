@@ -55,20 +55,6 @@ var config = [
 # neurons:  4166
 # synapses: 164840
 
-func savetofile(path, data):
-	var file = File.new()
-	file.open(path, File.WRITE)
-	file.store_var(data)
-	file.close()
-func loadfromfile(path):
-	var file = File.new()
-	if not file.file_exists(path):
-		return null
-	file.open(path, File.READ)
-	var data = file.get_var()
-	file.close()
-	return data
-
 func get_database_path():
 	return "res://DATABASES/" + curr_database + ".dat"
 func check_init_data_array_sizes():
@@ -87,7 +73,7 @@ func check_init_data_array_sizes():
 func initialize_network_data():
 
 	### check if database case EXIST within the files
-	var database = loadfromfile(get_database_path())
+	var database = Files.loadfile(get_database_path())
 	if database != null:
 		data = database
 	else: # no database found! start from scratch!
@@ -212,16 +198,6 @@ func update_nn():
 	Profiler.clock_in("fetchset_one_by_one")
 	fetchset_full_database()
 	Profiler.clock_out("fetchset_one_by_one")
-
-	# save data to drive!!
-	Profiler.clock_in("cache_serialization")
-	# first purge neurons' activation.
-	var clean_data = data.duplicate()
-	for l in clean_data.size():
-		for n in clean_data[l].size():
-			clean_data[l][n][0] = 0.0
-	savetofile(get_database_path(), clean_data)
-	Profiler.clock_out("cache_serialization")
 
 ###########
 
