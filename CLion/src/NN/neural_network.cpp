@@ -150,7 +150,7 @@ bool neural_network::update_network() {
 bool neural_network::update_backpropagation() {
 
     // for each layer (starting from the outputs, backwards)
-    for (int l = layers_count - 1; l > 0; --l) {
+    for (int l = layers_count - 1; l >= 0; --l) {
         auto layer = layers[l];
 
         // these change PER LAYER
@@ -171,12 +171,18 @@ bool neural_network::update_backpropagation() {
         // for each neuron
         for (int n = 0; n < layer.neuron_total_count; ++n) {
             auto neuron = &layer.neurons[n];
-
             unsigned long long total_dendrites = neuron->parent_dendrites_total_count;
-            double activ_goal_gradient = (neuron->activation_GOAL_FAVORABLE / (double)neuron->activation_GOAL_FAVORABLE_COUNTS) - neuron->activation; // this is ultimately the goal of the child neuron. how much should the total be changed by??
+
+            // for the first from the end layer (inputs) convert the activation DEMAND into GRADIENT GOAL
+            if (l == layers_count - 1) {
+                neuron->activation_GOAL_GRADIENT = neuron->activation_FINAL_DEMAND - neuron->activation;
+                neuron->activation_GOAL_GRADIENT_COUNTS = 1;
+            }
+
+            // get ACTIVATION GOAL for the current neuron
+            double activ_goal_gradient = (neuron->activation_GOAL_GRADIENT / (double)neuron->activation_GOAL_GRADIENT_COUNTS); // this is ultimately the goal of the child neuron. how much should the total be changed by??
             double activ_goal_gradient_per_synapse = activ_goal_gradient / (double)total_dendrites; // this is the score goal, but scaled by the number of parent neurons.
-
-
+            neuron->activation_GOAL_GRADIENT_COUNTS = 0;
 
             // child's BIAS
             neuron->bias = 0;
@@ -187,50 +193,40 @@ bool neural_network::update_backpropagation() {
 //            if (neuron->bias < -100.0)
 //                neuron->bias = -100.0;
 
-
             // for each synapse (backwards)
-            for (int s = 0; s < total_dendrites; ++s) {
-                auto synapse = neuron->parent_dendrites[s];
+            // BACKPROPAGATE goals for weight and activation
+            for (int d = 0; d < total_dendrites; ++d) {
+                auto synapse = neuron->parent_dendrites[d];
                 auto parent = synapse->owner;
 
                 // TODO: MAGIC!
 
-//                neuron->bias = 0;
-//                // child's BIAS
-////                neuron->bias += score_gradient * BIAS_coeff;
-//                if (neuron->bias > 100.0) // clamp BIAS
-//                    neuron->bias = 100.0;
-//                if (neuron->bias < -100.0)
-//                    neuron->bias = -100.0;
-//
-//                // synapse's WEIGHT
-//                synapse->weight += score_gradient_per_synapse * (parent->activation+0.00) * WEIGHT_coeff;
-//                if (synapse->weight > 1.0) // clamp WEIGHT
-//                    synapse->weight = 1.0;
-//                if (synapse->weight < -1.0)
-//                    synapse->weight = -1.0;
-//
-//                // parent's ACTIVATION
-//                parent->activation_GOAL_FAVORABLE = parent->activation; // default
-//                parent->activation_GOAL_FAVORABLE = parent->activation + score_gradient_per_synapse * ACTIVATION_coeff;
-////                parent->activation_GOAL_FAVORABLE = 1.0;
-
-
-                // TODO: MAGIC!
-
                 // synapse's WEIGHT
-//                synapse->weight = 0.0;
-                synapse->weight += activ_goal_gradient_per_synapse * parent->activation;// * WEIGHT_coeff;
-                if (synapse->weight > 1.0) // clamp WEIGHT
-                    synapse->weight = 1.0;
-                if (synapse->weight < -1.0)
-                    synapse->weight = -1.0;
+                double synapse_weight_new_goal = activ_goal_gradient_per_synapse * parent->activation;//synapse->weight +
+                synapse->weight_GOAL_GRADIENT = synapse_weight_new_goal;// * WEIGHT_coeff;
+                synapse->weight_GOAL_GRADIENT_COUNTS++;
 
                 // parent's ACTIVATION
 //                parent->activation_GOAL_FAVORABLE = parent->activation; // default
-                double parent_new_goal = parent->activation + activ_goal_gradient * synapse->weight;
-                parent->activation_GOAL_FAVORABLE += parent_new_goal;// * ACTIVATION_coeff;
-                parent->activation_GOAL_FAVORABLE_COUNTS++;
+                double parent_new_goal = activ_goal_gradient_per_synapse * synapse->weight;//parent->activation +
+                parent->activation_GOAL_GRADIENT += parent_new_goal;// * ACTIVATION_coeff;
+                parent->activation_GOAL_GRADIENT_COUNTS++;
+            }
+
+
+            // for each synapse (forwards -- only update these for the layers BEFORE the last one, which has none)
+            // update WEIGHTS for the synapses
+            for (int s = 0; s < neuron->synapses_total_count; ++s) {
+                auto synapse = &neuron->synapses[s];
+                if (synapse->weight_GOAL_GRADIENT_COUNTS > 0) {
+                    double weight_gradient = synapse->weight_GOAL_GRADIENT / (double) synapse->weight_GOAL_GRADIENT_COUNTS;
+                    synapse->weight += weight_gradient;
+//                    synapse.weight_GOAL_GRADIENT_COUNTS = 0;
+                    if (synapse->weight > 1.0) // clamp WEIGHT
+                        synapse->weight = 1.0;
+                    if (synapse->weight < -1.0)
+                        synapse->weight = -1.0;
+                }
             }
         }
     }
@@ -241,7 +237,7 @@ double neural_network::get_result_cost() {
     double total_cost = 0.0;
     for (int n = 0; n < outputs()->neuron_total_count; ++n) {
         neuron_obj *neuron = &outputs()->neurons[n];
-        double diff = neuron->activation - neuron->activation_GOAL_FAVORABLE;
+        double diff = neuron->activation - neuron->activation_GOAL_GRADIENT;
         total_cost += (diff * diff);
     }
     return total_cost;

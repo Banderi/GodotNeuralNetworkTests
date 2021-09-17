@@ -35,21 +35,23 @@ func _draw():
 			var opacity = 1
 			if l > 0:
 
-
+				# outer border = bias
 				var col = Color(0.5, 0.5, 0, 1)
 				if neuron[1] < 0:
 					col = col.linear_interpolate(Color(0,0,1,1), abs(neuron[1]))
 				if neuron[1] > 0:
 					col = col.linear_interpolate(Color(1,0,0,1), neuron[1])
-#				col *= min(1.0, activation)
-#				col.a = 1.0
-
-				if neuron.size() > 3:
-					draw_rect(Rect2(pos.x - 1 + 6, pos.y - 1, 3, 7), Color(0,0,0,opacity).linear_interpolate(Color(1,1,1,opacity), neuron[3]))
-
-
-
 				draw_rect(Rect2(pos.x - 1, pos.y - 1, 7, 7), col)
+
+				# rightside edge = draw activation goal
+				col = Color(0.5, 0.5, 0, 1)
+				if neuron[3] < 0:
+					col = col.linear_interpolate(Color(0,0,1,1), abs(neuron[3]))
+				if neuron[3] > 0:
+					col = col.linear_interpolate(Color(1,0,0,1), neuron[3])
+				draw_rect(Rect2(pos.x - 1 + 6, pos.y - 1, 3, 7), col)
+
+			# activation!
 			draw_rect(Rect2(pos.x, pos.y, 5, 5), Color(0,0,0,opacity).linear_interpolate(Color(1,1,1,opacity), neuron[0]))
 
 

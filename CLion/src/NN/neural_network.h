@@ -14,15 +14,18 @@ typedef struct neuron_obj {
     synapse_obj **parent_dendrites = nullptr; // <---- ARRAY
     unsigned long long parent_dendrites_total_count = 0;
     //
-    double activation_GOAL_FAVORABLE = 0.0;
-    int activation_GOAL_FAVORABLE_COUNTS = 0;
+    double activation_FINAL_DEMAND = 0.0;
+    double activation_GOAL_GRADIENT = 0.0;
+    unsigned long long activation_GOAL_GRADIENT_COUNTS = 0;
 } neuron_obj;
 
 typedef struct synapse_obj {
     double weight = 0.0;
-    double weight_COMPUTED_COST_SCORE = 0.0;
     neuron_obj *owner = nullptr;
     neuron_obj *termination = nullptr;
+    //
+    double weight_GOAL_GRADIENT = 0.0;
+    unsigned long long weight_GOAL_GRADIENT_COUNTS = 0;
 } synapse_obj;
 
 typedef struct layer_obj {
